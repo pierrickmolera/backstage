@@ -71,7 +71,11 @@ export const defaultApis = [
       ),
   }),
   createApiFactory(alertApiRef, new AlertApiForwarder()),
-  createApiFactory(authorizationApiRef, new DefaultAuthorizationApi()),
+  createApiFactory({
+    api: authorizationApiRef,
+    deps: { identityApi: identityApiRef },
+    factory: ({ identityApi }) => new DefaultAuthorizationApi({ identityApi }),
+  }),
   createApiFactory(analyticsApiRef, new NoOpAnalyticsApi()),
   createApiFactory({
     api: errorApiRef,
