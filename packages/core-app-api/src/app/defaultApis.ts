@@ -55,9 +55,11 @@ import {
   oneloginAuthApiRef,
   oidcAuthApiRef,
   bitbucketAuthApiRef,
+  authorizationApiRef,
 } from '@backstage/core-plugin-api';
 
 import OAuth2Icon from '@material-ui/icons/AcUnit';
+import { DefaultAuthorizationApi } from '../apis/implementations/AuthorizationApi';
 
 export const defaultApis = [
   createApiFactory({
@@ -69,6 +71,7 @@ export const defaultApis = [
       ),
   }),
   createApiFactory(alertApiRef, new AlertApiForwarder()),
+  createApiFactory(authorizationApiRef, new DefaultAuthorizationApi()),
   createApiFactory(analyticsApiRef, new NoOpAnalyticsApi()),
   createApiFactory({
     api: errorApiRef,
