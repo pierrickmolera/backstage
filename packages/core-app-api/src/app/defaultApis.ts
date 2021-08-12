@@ -16,6 +16,7 @@
 
 import {
   AlertApiForwarder,
+  DefaultPermissionApi,
   NoOpAnalyticsApi,
   ErrorApiForwarder,
   ErrorAlerter,
@@ -55,12 +56,11 @@ import {
   oneloginAuthApiRef,
   oidcAuthApiRef,
   bitbucketAuthApiRef,
-  authorizationApiRef,
   identityApiRef,
+  permissionApiRef,
 } from '@backstage/core-plugin-api';
 
 import OAuth2Icon from '@material-ui/icons/AcUnit';
-import { DefaultAuthorizationApi } from '../apis/implementations/AuthorizationApi';
 
 export const defaultApis = [
   createApiFactory({
@@ -73,10 +73,10 @@ export const defaultApis = [
   }),
   createApiFactory(alertApiRef, new AlertApiForwarder()),
   createApiFactory({
-    api: authorizationApiRef,
+    api: permissionApiRef,
     deps: { discoveryApi: discoveryApiRef, identityApi: identityApiRef },
     factory: ({ discoveryApi, identityApi }) =>
-      new DefaultAuthorizationApi(discoveryApi, identityApi),
+      new DefaultPermissionApi(discoveryApi, identityApi),
   }),
   createApiFactory(analyticsApiRef, new NoOpAnalyticsApi()),
   createApiFactory({
