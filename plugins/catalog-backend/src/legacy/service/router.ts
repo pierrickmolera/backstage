@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { errorHandler } from '@backstage/backend-common';
+import {
+  errorHandler,
+  PluginEndpointDiscovery,
+} from '@backstage/backend-common';
 import type { Entity } from '@backstage/catalog-model';
 import {
   analyzeLocationSchema,
@@ -60,6 +63,7 @@ export interface RouterOptions {
   refreshService?: RefreshService;
   logger: Logger;
   config: Config;
+  discovery: PluginEndpointDiscovery;
 }
 
 /** @deprecated This was part of the legacy catalog engine */
