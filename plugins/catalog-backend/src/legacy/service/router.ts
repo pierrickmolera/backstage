@@ -27,7 +27,6 @@ import {
 import { Config } from '@backstage/config';
 import { AuthorizeResult } from '@backstage/core-plugin-api';
 import { NotFoundError } from '@backstage/errors';
-import fetch from 'node-fetch';
 import express from 'express';
 import Router from 'express-promise-router';
 import { Logger } from 'winston';
@@ -52,6 +51,8 @@ import {
   requireRequestBody,
   validateRequestBody,
 } from '../../service/util';
+import { PermissionClient } from '@backstage/permission-client';
+import { IdentityClient } from '@backstage/plugin-auth-backend';
 
 /** @deprecated This was part of the legacy catalog engine */
 export interface RouterOptions {
@@ -83,6 +84,10 @@ export async function createRouter(
 
   const router = Router();
   router.use(express.json());
+
+  const permissionApi = new PermissionClient({
+    discoveryApi: options.discovery,
+  });
 
   const readonlyEnabled =
     config.getOptionalBoolean('catalog.readonly') || false;
@@ -173,31 +178,18 @@ export async function createRouter(
           throw missingError;
         }
 
-        // TODO(himanshu): discover the url for the permission backend.
-        const permissionBackendUrl = 'http://localhost:7000/api/permission';
-
-        const authorizeResponse = await fetch(
-          `${permissionBackendUrl}/authorize`,
+        const authorizeResponse = await permissionApi.authorize(
           {
-            method: 'POST',
-            body: JSON.stringify({
-              permission: CatalogPermission.ENTITY_READ,
-              context: {
-                entity: entities[0],
-              },
-            }),
-            headers: {
-              'Content-Type': 'application/json',
-              ...(req.header('authorization')
-                ? { Authorization: req.header('authorization') }
-                : {}),
+            permission: CatalogPermission.ENTITY_READ,
+            context: {
+              entity: entities[0],
             },
           },
+          { token: IdentityClient.getBearerToken(req.header('authorization')) },
         );
-        const responseBody = await authorizeResponse.json();
 
         // TODO(orkohunter): why does this enum work? It's a frontend package. move to common package.
-        if (responseBody.result !== AuthorizeResult.ALLOW) {
+        if (authorizeResponse.result !== AuthorizeResult.ALLOW) {
           // TBD: Should this be 403 instead?
           throw missingError;
         }
