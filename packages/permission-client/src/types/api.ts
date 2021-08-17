@@ -25,7 +25,7 @@ export type PermissionRequestOptions = {
 
 export interface PermissionApi {
   authorize(
-    request?: AuthorizeRequest,
+    request: AuthorizeRequest,
     options?: PermissionRequestOptions,
   ): Promise<AuthorizeResponse>;
 }
