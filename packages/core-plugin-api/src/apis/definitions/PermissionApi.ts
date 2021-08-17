@@ -27,6 +27,7 @@ export type AuthorizeRequest = {
   // TODO(mtlewis/orkohunter): can we sprinkle some generics somewhere in here
   // to allow stronger typing of context?
   context: {
+    // TODO(mtlewis/orkohunter): Think about passing ONLY entity ref instead of all of entity, and all the relations are fetched from Catalog backend.
     [key: string]: any;
   };
 };
