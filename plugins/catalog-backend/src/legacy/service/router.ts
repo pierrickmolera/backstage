@@ -120,8 +120,25 @@ export async function createRouter(
           res.setHeader('link', `<${url.pathname}${url.search}>; rel="next"`);
         }
 
+        // Go one by one on the entities returned
+        const authorizeResponse = await permissionApi.authorize(
+          entities.map(entity => ({
+            permission: CatalogPermission.ENTITY_READ,
+            context: {
+              entity,
+            },
+          })),
+          {
+            token: IdentityClient.getBearerToken(req.header('authorization')),
+          },
+        );
+
         // TODO(freben): encode the pageInfo in the response
-        res.json(entities);
+        res.json(
+          entities.filter((_entity, index) => {
+            return authorizeResponse[index].result === AuthorizeResult.ALLOW;
+          }),
+        );
       })
       .post('/entities', async (req, res) => {
         /*
