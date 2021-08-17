@@ -14,10 +14,4 @@
  * limitations under the License.
  */
 
-export { useQueryParamState } from './useQueryParamState';
-export { useSupportConfig } from './useSupportConfig';
-export type {
-  SupportConfig,
-  SupportItem,
-  SupportItemLink,
-} from './useSupportConfig';
+export { SimplePermissionHandler } from './SimplePermissionHandler';

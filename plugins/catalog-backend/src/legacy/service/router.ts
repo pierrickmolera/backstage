@@ -25,7 +25,6 @@ import {
   CatalogPermission,
 } from '@backstage/catalog-model';
 import { Config } from '@backstage/config';
-import { AuthorizeResult } from '@backstage/core-plugin-api';
 import { NotFoundError } from '@backstage/errors';
 import express from 'express';
 import Router from 'express-promise-router';
@@ -51,7 +50,8 @@ import {
   requireRequestBody,
   validateRequestBody,
 } from '../../service/util';
-import { PermissionClient } from '@backstage/permission-client';
+import { AuthorizeResult } from '@backstage/plugin-permission';
+import { PermissionClient } from '@backstage/plugin-permission-module-catalog';
 import { IdentityClient } from '@backstage/plugin-auth-backend';
 
 /** @deprecated This was part of the legacy catalog engine */

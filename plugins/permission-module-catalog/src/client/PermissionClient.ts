@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Backstage Authors
+ * Copyright 2021 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-export { useQueryParamState } from './useQueryParamState';
-export { useSupportConfig } from './useSupportConfig';
-export type {
-  SupportConfig,
-  SupportItem,
-  SupportItemLink,
-} from './useSupportConfig';
+import { PermissionClient as BasePermissionClient } from '@backstage/plugin-permission';
+import { EntityContext } from '../api';
+
+export class PermissionClient extends BasePermissionClient<EntityContext> {}

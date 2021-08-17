@@ -16,18 +16,24 @@
 
 import { ResponseError } from '@backstage/errors';
 import fetch from 'cross-fetch';
-import { PermissionApi, PermissionRequestOptions } from './types/api';
 
 // TODO(mtlewis): Seems from the CatalogClient example that we shouldn't
 // be depending on core-plugin-api. Probably worth a wider conversation
 // about organization of permission packages and dependencies.
+import { DiscoveryApi } from '@backstage/core-plugin-api';
 import {
   AuthorizeRequest,
+  AuthorizeRequestContext,
   AuthorizeResponse,
-  DiscoveryApi,
-} from '@backstage/core-plugin-api';
+} from '../api';
 
-export class PermissionClient implements PermissionApi {
+export type PermissionRequestOptions = {
+  token?: string;
+};
+
+export class PermissionClient<
+  T extends AuthorizeRequestContext = AuthorizeRequestContext,
+> {
   private readonly discoveryApi: DiscoveryApi;
 
   constructor(options: { discoveryApi: DiscoveryApi }) {
@@ -35,7 +41,7 @@ export class PermissionClient implements PermissionApi {
   }
 
   async authorize(
-    requests: AuthorizeRequest[],
+    requests: AuthorizeRequest<T>[],
     options?: PermissionRequestOptions,
   ): Promise<AuthorizeResponse[]> {
     // TODO(mtlewis/orkohunter) validate response as AuthorizeResponse.

@@ -18,23 +18,24 @@ import { errorHandler, SingleHostDiscovery } from '@backstage/backend-common';
 import express, { Request, Response } from 'express';
 import Router from 'express-promise-router';
 import { Logger } from 'winston';
+import { IdentityClient } from '@backstage/plugin-auth-backend';
+import { Config } from '@backstage/config';
 import {
   AuthorizeRequest,
   AuthorizeResponse,
-  AuthorizeResult,
-} from '@backstage/core-plugin-api';
-import { IdentityClient } from '@backstage/plugin-auth-backend';
-import { Config } from '@backstage/config';
+} from '@backstage/plugin-permission';
+import { PermissionHandler } from '../types';
 
 export interface RouterOptions {
   logger: Logger;
   config: Config;
+  permissionHandler: PermissionHandler;
 }
 
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {
-  const { logger, config } = options;
+  const { logger, config, permissionHandler } = options;
   const discovery = SingleHostDiscovery.fromConfig(config);
   const identity = new IdentityClient({
     discovery,
@@ -57,27 +58,26 @@ export async function createRouter(
       // either by allowing them a superuser token or treating their requests separately from a user's request.
       const token = IdentityClient.getBearerToken(req.header('authorization'));
 
-      // TODO(mtlewis/orkohunter): Should be possible to register
-      // a permission handler elsewhere and run it here to determine
-      // the result.
-
       if (token) {
-        const { id } = await identity.authenticate(token);
-        logger.info(`authorizing as user: ${id}...`);
+        const user = await identity.authenticate(token);
+        logger.info(`authorizing as user: ${user.id}...`);
 
         res.json(
-          req.body.map(() => ({
-            // TODO: why does this enum work? It's a frontend package. Should move to a common package.
-            result: AuthorizeResult.ALLOW,
-          })),
+          await Promise.all(
+            req.body.map((authorizeRequest: AuthorizeRequest) =>
+              permissionHandler.handle(authorizeRequest, user),
+            ),
+          ),
         );
       } else {
         logger.info('authorizing anonymously...');
 
         res.json(
-          req.body.map(() => ({
-            result: AuthorizeResult.DENY,
-          })),
+          await Promise.all(
+            req.body.map((authorizeRequest: AuthorizeRequest) =>
+              permissionHandler.handle(authorizeRequest),
+            ),
+          ),
         );
       }
     },

@@ -16,16 +16,16 @@
 
 import {
   AuthorizeRequest,
+  AuthorizeRequestContext,
   AuthorizeResponse,
-} from '@backstage/core-plugin-api';
+} from '@backstage/plugin-permission';
+import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 
-export type PermissionRequestOptions = {
-  token?: string;
-};
-
-export interface PermissionApi {
-  authorize(
-    requests: AuthorizeRequest[],
-    options?: PermissionRequestOptions,
-  ): Promise<AuthorizeResponse[]>;
+export interface PermissionHandler<
+  T extends AuthorizeRequestContext = AuthorizeRequestContext,
+> {
+  handle(
+    request: AuthorizeRequest<T>,
+    user?: BackstageIdentity,
+  ): Promise<AuthorizeResponse>;
 }

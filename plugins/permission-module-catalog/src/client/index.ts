@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export type { PermissionApi, PermissionRequestOptions } from './api';
+export { PermissionClient } from './PermissionClient';

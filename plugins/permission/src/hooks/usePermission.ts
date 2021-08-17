@@ -15,11 +15,12 @@
  */
 
 import { useAsync } from 'react-use';
+import { useApi } from '@backstage/core-plugin-api';
 import {
-  permissionApiRef,
+  AuthorizeRequestContext,
   AuthorizeResult,
-  useApi,
-} from '@backstage/core-plugin-api';
+  permissionApiRef,
+} from '../api';
 
 export class AsyncPermissionResult {
   constructor(
@@ -47,9 +48,11 @@ export class AsyncPermissionResult {
   }
 }
 
-export const usePermission = (
+export const usePermission = <
+  T extends AuthorizeRequestContext = AuthorizeRequestContext,
+>(
   permission: string,
-  context: { [key: string]: any },
+  context: T,
 ): AsyncPermissionResult => {
   const permissionApi = useApi(permissionApiRef);
 

@@ -14,12 +14,4 @@
  * limitations under the License.
  */
 
-import { useEntity } from './useEntity';
-import { usePermission } from '@backstage/core-components';
-
-export const useEntityPermission = (permission: string) => {
-  // TODO(mtlewis/orkohunter): what happens if there's no entity?
-  const { entity } = useEntity();
-
-  return usePermission(permission, { entity });
-};
+export { useEntityPermission } from './useEntityPermission';

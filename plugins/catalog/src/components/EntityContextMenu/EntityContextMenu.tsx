@@ -28,7 +28,7 @@ import Cancel from '@material-ui/icons/Cancel';
 import MoreVert from '@material-ui/icons/MoreVert';
 import React, { useState } from 'react';
 import { IconComponent } from '@backstage/core-plugin-api';
-import { useEntityPermission } from '@backstage/plugin-catalog-react';
+import { useEntityPermission } from '@backstage/plugin-permission-module-catalog';
 import { CatalogPermission } from '@backstage/catalog-model';
 
 // TODO(freben): It should probably instead be the case that Header sets the theme text color to white inside itself unconditionally instead
