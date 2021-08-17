@@ -29,11 +29,9 @@
     "clean": "backstage-cli clean"
   },
   "dependencies": {
-    "@backstage/backend-common": "^0.8.9",
-    "@backstage/config": "^0.1.5",
     "@backstage/core-plugin-api": "^0.1.5",
     "@backstage/errors": "^0.1.1",
-    "@backstage/plugin-auth-backend": "^0.3.19",
+    "cross-fetch": "^3.0.6",
     "react-use": "^17.2.4"
   },
   "devDependencies": {
