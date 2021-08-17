@@ -35,11 +35,11 @@ export class PermissionClient implements PermissionApi {
   }
 
   async authorize(
-    request: AuthorizeRequest,
+    requests: AuthorizeRequest[],
     options?: PermissionRequestOptions,
-  ): Promise<AuthorizeResponse> {
+  ): Promise<AuthorizeResponse[]> {
     // TODO(mtlewis/orkohunter) validate response as AuthorizeResponse.
-    return this.post('/authorize', request, options);
+    return this.post('/authorize', requests, options);
   }
 
   //
@@ -48,12 +48,12 @@ export class PermissionClient implements PermissionApi {
 
   private async post(
     path: string,
-    request: AuthorizeRequest,
+    requests: AuthorizeRequest[],
     options?: PermissionRequestOptions,
   ): Promise<any> {
     const response = await fetch(await this.urlFor(path), {
       method: 'POST',
-      body: JSON.stringify(request),
+      body: JSON.stringify(requests),
       headers: {
         ...this.authHeaders(options),
         'content-type': 'application/json',

@@ -179,17 +179,19 @@ export async function createRouter(
         }
 
         const authorizeResponse = await permissionApi.authorize(
-          {
-            permission: CatalogPermission.ENTITY_READ,
-            context: {
-              entity: entities[0],
+          [
+            {
+              permission: CatalogPermission.ENTITY_READ,
+              context: {
+                entity: entities[0],
+              },
             },
-          },
+          ],
           { token: IdentityClient.getBearerToken(req.header('authorization')) },
         );
 
         // TODO(orkohunter): why does this enum work? It's a frontend package. move to common package.
-        if (authorizeResponse.result !== AuthorizeResult.ALLOW) {
+        if (authorizeResponse[0].result !== AuthorizeResult.ALLOW) {
           // TBD: Should this be 403 instead?
           throw missingError;
         }

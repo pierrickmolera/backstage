@@ -15,10 +15,14 @@
  */
 
 import { errorHandler, SingleHostDiscovery } from '@backstage/backend-common';
-import express, { Response } from 'express';
+import express, { Request, Response } from 'express';
 import Router from 'express-promise-router';
 import { Logger } from 'winston';
-import { AuthorizeResponse, AuthorizeResult } from '@backstage/core-plugin-api';
+import {
+  AuthorizeRequest,
+  AuthorizeResponse,
+  AuthorizeResult,
+} from '@backstage/core-plugin-api';
 import { IdentityClient } from '@backstage/plugin-auth-backend';
 import { Config } from '@backstage/config';
 
@@ -40,29 +44,44 @@ export async function createRouter(
   const router = Router();
   router.use(express.json());
 
-  router.post('/authorize', async (req, res: Response<AuthorizeResponse>) => {
-    const token = IdentityClient.getBearerToken(req.header('authorization'));
+  router.post(
+    '/authorize',
+    async (
+      req: Request<AuthorizeRequest[]>,
+      res: Response<AuthorizeResponse[]>,
+    ) => {
+      // TODO(mtlewis/orkohunter): Payload too large errors happen when internal backends (techdocs, search, etc.) try
+      // to fetch all of entities.
+      // Fix1: The request should only contain entity refs instead of full entity.
+      // Fix2: We should probably not filter requests from other backends -
+      // either by allowing them a superuser token or treating their requests separately from a user's request.
+      const token = IdentityClient.getBearerToken(req.header('authorization'));
 
-    // TODO(mtlewis/orkohunter): Should be possible to register
-    // a permission handler elsewhere and run it here to determine
-    // the result.
+      // TODO(mtlewis/orkohunter): Should be possible to register
+      // a permission handler elsewhere and run it here to determine
+      // the result.
 
-    if (token) {
-      const { id } = await identity.authenticate(token);
-      logger.info(`authorizing as user: ${id}...`);
+      if (token) {
+        const { id } = await identity.authenticate(token);
+        logger.info(`authorizing as user: ${id}...`);
 
-      res.json({
-        // TODO: why does this enum work? It's a frontend package. Should move to a common package.
-        result: AuthorizeResult.ALLOW,
-      });
-    } else {
-      logger.info('authorizing anonymously...');
+        res.json(
+          req.body.map(() => ({
+            // TODO: why does this enum work? It's a frontend package. Should move to a common package.
+            result: AuthorizeResult.ALLOW,
+          })),
+        );
+      } else {
+        logger.info('authorizing anonymously...');
 
-      res.json({
-        result: AuthorizeResult.DENY,
-      });
-    }
-  });
+        res.json(
+          req.body.map(() => ({
+            result: AuthorizeResult.DENY,
+          })),
+        );
+      }
+    },
+  );
 
   router.use(errorHandler());
   return router;

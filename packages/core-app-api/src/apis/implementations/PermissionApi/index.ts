@@ -34,8 +34,10 @@ export class DefaultPermissionApi implements PermissionApi {
   }
 
   async authorize(options: AuthorizeRequest): Promise<AuthorizeResponse> {
-    return this.permissionClient.authorize(options, {
-      token: await this.identityApi.getIdToken(),
-    });
+    return (
+      await this.permissionClient.authorize([options], {
+        token: await this.identityApi.getIdToken(),
+      })
+    )[0];
   }
 }
