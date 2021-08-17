@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { BackstageIdentity } from '@backstage/core-plugin-api';
+import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import {
   AuthorizeRequest,
   AuthorizeResult,

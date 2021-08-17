@@ -28,7 +28,7 @@
     "clean": "backstage-cli clean"
   },
   "dependencies": {
-    "@backstage/core-plugin-api": "^0.1.0",
+    "@backstage/plugin-auth-backend": "^0.3.20",
     "@backstage/plugin-permission": "^0.1.0",
     "@backstage/plugin-permission-module-catalog": "^0.1.0",
     "@backstage/plugin-permission-backend": "^0.1.0"
