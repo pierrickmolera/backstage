@@ -19,7 +19,7 @@ import { usePermission } from '@backstage/core-components';
 
 export const useEntityPermission = (permission: string) => {
   // TODO(mtlewis/orkohunter): what happens if there's no entity?
-  const entity = useEntity();
+  const { entity } = useEntity();
 
   return usePermission(permission, { entity });
 };
