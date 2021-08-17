@@ -41,13 +41,7 @@ export type AuthorizeResponse = {
   result: AuthorizeResult;
 };
 
-export interface PermissionApi<
-  T extends AuthorizeRequestContext = AuthorizeRequestContext,
-> {
-  authorize(options: AuthorizeRequest<T>): Promise<AuthorizeResponse>;
-}
-
-export class IdentityAwarePermissionApi<
+export class PermissionApi<
   T extends AuthorizeRequestContext = AuthorizeRequestContext,
 > implements PermissionApi<T>
 {

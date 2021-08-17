@@ -21,7 +21,7 @@ import {
 } from '@backstage/integration-react';
 import {
   permissionApiRef,
-  IdentityAwarePermissionApi,
+  PermissionApi,
 } from '@backstage/plugin-permission-module-catalog';
 import {
   costInsightsApiRef,
@@ -46,7 +46,7 @@ export const apis: AnyApiFactory[] = [
     api: permissionApiRef,
     deps: { discoveryApi: discoveryApiRef, identityApi: identityApiRef },
     factory: ({ discoveryApi, identityApi }) =>
-      new IdentityAwarePermissionApi(discoveryApi, identityApi),
+      new PermissionApi(discoveryApi, identityApi),
   }),
 
   createApiFactory({

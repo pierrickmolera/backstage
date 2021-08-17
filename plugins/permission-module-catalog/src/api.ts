@@ -17,7 +17,6 @@
 import { ApiRef, createApiRef } from '@backstage/core-plugin-api';
 import {
   PermissionApi as BasePermissionApi,
-  IdentityAwarePermissionApi as BaseIdentityAwarePermissionApi,
 } from '@backstage/plugin-permission';
 import { Entity } from '@backstage/catalog-model';
 
@@ -26,9 +25,7 @@ export type EntityContext = {
   entity: Entity;
 };
 
-export type PermissionApi = BasePermissionApi<EntityContext>;
-
-export class IdentityAwarePermissionApi extends BaseIdentityAwarePermissionApi<EntityContext> {}
+export class PermissionApi extends BasePermissionApi<EntityContext> {}
 
 export const permissionApiRef: ApiRef<PermissionApi> = createApiRef({
   id: 'plugin.permission',
