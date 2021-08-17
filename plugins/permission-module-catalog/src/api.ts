@@ -15,14 +15,12 @@
  */
 
 import { ApiRef, createApiRef } from '@backstage/core-plugin-api';
-import {
-  PermissionApi as BasePermissionApi,
-} from '@backstage/plugin-permission';
-import { Entity } from '@backstage/catalog-model';
+import { PermissionApi as BasePermissionApi } from '@backstage/plugin-permission';
+import { EntityName } from '@backstage/catalog-model';
 
 export type EntityContext = {
   // TODO(mtlewis/orkohunter): Think about passing ONLY entity ref instead of all of entity, and all the relations are fetched from Catalog backend.
-  entity: Entity;
+  entityName: EntityName;
 };
 
 export class PermissionApi extends BasePermissionApi<EntityContext> {}

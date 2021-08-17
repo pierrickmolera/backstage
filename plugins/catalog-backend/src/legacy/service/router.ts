@@ -18,6 +18,7 @@ import {
   errorHandler,
   PluginEndpointDiscovery,
 } from '@backstage/backend-common';
+import { getEntityName } from '@backstage/catalog-model';
 import type { Entity } from '@backstage/catalog-model';
 import {
   analyzeLocationSchema,
@@ -120,12 +121,15 @@ export async function createRouter(
           res.setHeader('link', `<${url.pathname}${url.search}>; rel="next"`);
         }
 
-        // Go one by one on the entities returned
+        // TODO(mtlewis): the entity won't necessarily contain the metadata we
+        // need to get the entity name at this point - we need to extend the fields
+        // above to add the metadata and then remove it if it's not needed on
+        // the response.
         const authorizeResponse = await permissionApi.authorize(
           entities.map(entity => ({
             permission: CatalogPermission.ENTITY_READ,
             context: {
-              entity,
+              entityName: getEntityName(entity),
             },
           })),
           {
@@ -200,7 +204,7 @@ export async function createRouter(
             {
               permission: CatalogPermission.ENTITY_READ,
               context: {
-                entity: entities[0],
+                entityName: getEntityName(entities[0]),
               },
             },
           ],
