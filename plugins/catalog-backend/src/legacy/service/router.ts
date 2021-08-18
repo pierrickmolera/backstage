@@ -15,12 +15,12 @@
  */
 
 import { errorHandler, SingleHostDiscovery } from '@backstage/backend-common';
-import { getEntityName } from '@backstage/catalog-model';
 import type { Entity } from '@backstage/catalog-model';
 import {
   analyzeLocationSchema,
   locationSpecSchema,
   CatalogPermission,
+  getEntityName,
 } from '@backstage/catalog-model';
 import { Config } from '@backstage/config';
 import { NotFoundError } from '@backstage/errors';
