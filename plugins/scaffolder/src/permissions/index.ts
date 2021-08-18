@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-export * from './client';
-export * from './components';
-export * from './hooks';
-export * from './permissions';
-export * from './api';
+import { createPermissions } from '@backstage/plugin-permission';
+
+export const ScaffolderPermission = createPermissions({
+  ROUTES: {
+    id: 'backstage.scaffolder.routes',
+    attributes: {
+      ROUTE_VISIBILITY: true,
+    },
+  },
+});

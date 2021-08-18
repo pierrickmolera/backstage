@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-export * from './client';
-export * from './components';
-export * from './hooks';
-export * from './permissions';
-export * from './api';
+import React, { PropsWithChildren } from 'react';
+import { usePermission } from '../hooks';
+import { Permission } from '../permissions';
+
+export const WithPermission = ({
+  permission,
+  children,
+}: PropsWithChildren<{ permission: Permission }>) => {
+  const permissionResult = usePermission(permission, {});
+
+  return <>{permissionResult.isAllowed() ? children : null}</>;
+};
