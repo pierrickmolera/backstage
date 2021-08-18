@@ -16,22 +16,22 @@
 
 import { PermissionAttribute } from './attributes';
 
-export type PermissionJSON<T extends string = string> = {
-  id: T;
+export type PermissionJSON = {
+  id: string;
   attributes: PermissionAttribute[];
 };
 
-export class Permission<T extends string = string> {
+export class Permission {
   readonly attributes: Set<PermissionAttribute>;
 
   constructor(
-    readonly id: T,
+    readonly id: string,
     attributesIterable?: Iterable<PermissionAttribute>,
   ) {
     this.attributes = new Set(attributesIterable);
   }
 
-  is(permission: Permission<string>) {
+  is(permission: Permission) {
     return this.id === permission.id;
   }
 
@@ -51,10 +51,7 @@ export class Permission<T extends string = string> {
     return { id: this.id, attributes: [...this.attributes] };
   }
 
-  static fromJSON<T extends string = string>({
-    id,
-    attributes,
-  }: PermissionJSON<T>) {
-    return new Permission<T>(id, attributes);
+  static fromJSON({ id, attributes }: PermissionJSON) {
+    return new Permission(id, attributes);
   }
 }

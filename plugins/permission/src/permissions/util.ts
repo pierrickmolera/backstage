@@ -14,33 +14,18 @@
  * limitations under the License.
  */
 
-import { Permission } from './permission';
-import { PermissionAttribute } from './attributes';
+import { Permission, PermissionJSON } from './permission';
 
-export type PermissionDefinition = {
-  attributes: Iterable<PermissionAttribute>;
-};
-
-type PermissionEnum = {
-  [id: string]: string;
-};
-
-type Permissions<T extends PermissionEnum> = {
-  [K in keyof T]: Permission<T[K]>;
-};
-
-export const createPermissions = <T extends PermissionEnum>(
-  permissionEnum: T,
-  permissions: Record<keyof T, PermissionDefinition>,
-): Permissions<T> => {
-  const entries: [keyof T, PermissionDefinition][] =
-    Object.entries(permissions);
-
-  return entries.reduce<Permissions<T>>(
-    (acc, [id, { attributes }]) => ({
+export const createPermissions = <T extends string>(
+  permissions: Record<T, PermissionJSON>,
+): Record<T, Permission> => {
+  return Object.entries<PermissionJSON>(permissions).reduce<
+    Record<T, Permission>
+  >(
+    (acc, [key, permission]) => ({
       ...acc,
-      [id]: new Permission<T[typeof id]>(permissionEnum[id], attributes),
+      [key]: Permission.fromJSON(permission),
     }),
-    {} as Permissions<T>,
+    {} as Record<T, Permission>,
   );
 };

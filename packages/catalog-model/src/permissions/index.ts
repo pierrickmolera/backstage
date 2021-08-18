@@ -19,19 +19,13 @@ import {
   PermissionAttribute,
 } from '@backstage/plugin-permission';
 
-enum CatalogPermissionIdentifier {
-  ENTITY_READ = 'catalog.entity.read',
-  ENTITY_UNREGISTER = 'catalog.entity.unregister',
-}
-
-export const CatalogPermission = createPermissions(
-  CatalogPermissionIdentifier,
-  {
-    ENTITY_READ: {
-      attributes: [PermissionAttribute.READ],
-    },
-    ENTITY_UNREGISTER: {
-      attributes: [PermissionAttribute.DELETE],
-    },
+export const CatalogPermission = createPermissions({
+  ENTITY_READ: {
+    id: 'catalog.entity.read',
+    attributes: [PermissionAttribute.READ],
   },
-);
+  ENTITY_UNREGISTER: {
+    id: 'catalog.entity.unregister',
+    attributes: [PermissionAttribute.DELETE],
+  },
+});
