@@ -25,7 +25,7 @@ import {
   AuthorizeResponse,
   Permission,
 } from '@backstage/plugin-permission';
-import { PermissionHandler } from '../types';
+import { PermissionHandler } from '../handler';
 
 export interface RouterOptions {
   logger: Logger;
