@@ -16,4 +16,5 @@
 
 export * from './client';
 export * from './hooks';
+export * from './permissions';
 export * from './api';

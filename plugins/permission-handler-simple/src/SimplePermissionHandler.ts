@@ -19,6 +19,7 @@ import {
   AuthorizeRequest,
   AuthorizeResult,
   AuthorizeResponse,
+  PermissionAttribute,
 } from '@backstage/plugin-permission';
 import { PermissionHandler } from '@backstage/plugin-permission-backend';
 import { EntityContext } from '@backstage/plugin-permission-module-catalog';
@@ -26,7 +27,7 @@ import { EntityContext } from '@backstage/plugin-permission-module-catalog';
 export class SimplePermissionHandler
   implements PermissionHandler<EntityContext>
 {
-  async handle(_request: AuthorizeRequest, identity?: BackstageIdentity) {
+  async handle(request: AuthorizeRequest, identity?: BackstageIdentity) {
     if (identity) {
       return {
         // TODO: why does this enum work? It's a frontend package. Should move to a common package.
@@ -35,7 +36,13 @@ export class SimplePermissionHandler
     }
 
     return {
-      result: AuthorizeResult.DENY,
+      result: request.permission.hasSome(
+        PermissionAttribute.CREATE,
+        PermissionAttribute.UPDATE,
+        PermissionAttribute.DELETE,
+      )
+        ? AuthorizeResult.DENY
+        : AuthorizeResult.ALLOW,
     } as AuthorizeResponse;
   }
 }

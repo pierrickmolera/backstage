@@ -21,6 +21,7 @@ import {
   IdentityApi,
 } from '@backstage/core-plugin-api';
 import { PermissionClient } from './client';
+import { Permission, PermissionJSON } from './permissions';
 
 export enum AuthorizeResult {
   DENY = 'DENY',
@@ -32,8 +33,14 @@ export type AuthorizeRequestContext = Record<string, any>;
 export type AuthorizeRequest<
   T extends AuthorizeRequestContext = AuthorizeRequestContext,
 > = {
-  // TODO(mtlewis/orkohunter): Should `permission`'s type be a string or a literal type composed of available permission strings?
-  permission: string;
+  permission: Permission;
+  context: T;
+};
+
+export type AuthorizeRequestJSON<
+  T extends AuthorizeRequestContext = AuthorizeRequestContext,
+> = {
+  permission: PermissionJSON;
   context: T;
 };
 

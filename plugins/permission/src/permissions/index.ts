@@ -14,24 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  createPermissions,
-  PermissionAttribute,
-} from '@backstage/plugin-permission';
-
-enum CatalogPermissionIdentifier {
-  ENTITY_READ = 'catalog.entity.read',
-  ENTITY_UNREGISTER = 'catalog.entity.unregister',
-}
-
-export const CatalogPermission = createPermissions(
-  CatalogPermissionIdentifier,
-  {
-    ENTITY_READ: {
-      attributes: [PermissionAttribute.READ],
-    },
-    ENTITY_UNREGISTER: {
-      attributes: [PermissionAttribute.DELETE],
-    },
-  },
-);
+export type { PermissionJSON } from './permission';
+export { Permission } from './permission';
+export { PermissionAttribute } from './attributes';
+export { createPermissions } from './util';

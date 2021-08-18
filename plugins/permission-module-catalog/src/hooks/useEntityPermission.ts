@@ -16,10 +16,10 @@
 
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { getEntityName } from '@backstage/catalog-model';
-import { usePermission } from '@backstage/plugin-permission';
+import { Permission, usePermission } from '@backstage/plugin-permission';
 import { EntityContext } from '../api';
 
-export const useEntityPermission = (permission: string) => {
+export const useEntityPermission = (permission: Permission) => {
   // TODO(mtlewis/orkohunter): what happens if there's no entity?
   const { entity } = useEntity();
 

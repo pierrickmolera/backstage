@@ -21,8 +21,9 @@ import { Logger } from 'winston';
 import { IdentityClient } from '@backstage/plugin-auth-backend';
 import { Config } from '@backstage/config';
 import {
-  AuthorizeRequest,
+  AuthorizeRequestJSON,
   AuthorizeResponse,
+  Permission,
 } from '@backstage/plugin-permission';
 import { PermissionHandler } from '../types';
 
@@ -48,7 +49,7 @@ export async function createRouter(
   router.post(
     '/authorize',
     async (
-      req: Request<AuthorizeRequest[]>,
+      req: Request<AuthorizeRequestJSON[]>,
       res: Response<AuthorizeResponse[]>,
     ) => {
       // TODO(mtlewis/orkohunter): Payload too large errors happen when internal backends (techdocs, search, etc.) try
@@ -64,8 +65,14 @@ export async function createRouter(
 
         res.json(
           await Promise.all(
-            req.body.map((authorizeRequest: AuthorizeRequest) =>
-              permissionHandler.handle(authorizeRequest, user),
+            req.body.map(({ permission, context }: AuthorizeRequestJSON) =>
+              permissionHandler.handle(
+                {
+                  permission: Permission.fromJSON(permission),
+                  context,
+                },
+                user,
+              ),
             ),
           ),
         );
@@ -74,8 +81,11 @@ export async function createRouter(
 
         res.json(
           await Promise.all(
-            req.body.map((authorizeRequest: AuthorizeRequest) =>
-              permissionHandler.handle(authorizeRequest),
+            req.body.map(({ permission, context }: AuthorizeRequestJSON) =>
+              permissionHandler.handle({
+                permission: Permission.fromJSON(permission),
+                context,
+              }),
             ),
           ),
         );
