@@ -14,41 +14,18 @@
  * limitations under the License.
  */
 
-import { PermissionAttribute } from './attributes';
+import { PermissionAttributes } from './attributes';
 
 export type PermissionJSON = {
   id: string;
-  attributes: PermissionAttribute[];
+  attributes: PermissionAttributes;
 };
 
 export class Permission {
-  readonly attributes: Set<PermissionAttribute>;
-
-  constructor(
-    readonly id: string,
-    attributesIterable?: Iterable<PermissionAttribute>,
-  ) {
-    this.attributes = new Set(attributesIterable);
-  }
+  constructor(readonly id: string, readonly attributes: PermissionAttributes) {}
 
   is(permission: Permission) {
     return this.id === permission.id;
-  }
-
-  has(attribute: PermissionAttribute) {
-    return this.attributes.has(attribute);
-  }
-
-  hasAll(...attributes: PermissionAttribute[]) {
-    return attributes.every(attribute => this.has(attribute));
-  }
-
-  hasSome(...attributes: PermissionAttribute[]) {
-    return attributes.some(attribute => this.has(attribute));
-  }
-
-  toJSON(): PermissionJSON {
-    return { id: this.id, attributes: [...this.attributes] };
   }
 
   static fromJSON({ id, attributes }: PermissionJSON) {

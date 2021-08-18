@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-import {
-  createPermissions,
-  PermissionAttribute,
-} from '@backstage/plugin-permission';
+import { createPermissions, CRUDAction } from '@backstage/plugin-permission';
 
 export const CatalogPermission = createPermissions({
   ENTITY_READ: {
     id: 'catalog.entity.read',
-    attributes: [PermissionAttribute.READ],
+    attributes: {
+      CRUD_ACTION: CRUDAction.READ,
+    },
   },
   ENTITY_UNREGISTER: {
     id: 'catalog.entity.unregister',
-    attributes: [PermissionAttribute.DELETE],
+    attributes: {
+      CRUD_ACTION: CRUDAction.DELETE,
+    },
   },
 });

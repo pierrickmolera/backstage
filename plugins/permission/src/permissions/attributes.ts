@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-export enum PermissionAttribute {
-  ROUTE_VISIBILITY = 'routeVisibility',
-  CREATE = 'create',
-  READ = 'read',
-  UPDATE = 'update',
-  DELETE = 'delete',
+export enum CRUDAction {
+  CREATE = 'CREATE',
+  READ = 'READ',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
 }
+
+export type PermissionAttributes = {
+  ROUTE_VISIBILITY?: boolean;
+  CRUD_ACTION?: CRUDAction;
+};

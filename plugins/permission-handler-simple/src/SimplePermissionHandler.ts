@@ -19,7 +19,7 @@ import {
   AuthorizeRequest,
   AuthorizeResult,
   AuthorizeResponse,
-  PermissionAttribute,
+  CRUDAction,
 } from '@backstage/plugin-permission';
 import { PermissionHandler } from '@backstage/plugin-permission-backend';
 import { EntityContext } from '@backstage/plugin-permission-module-catalog';
@@ -36,13 +36,10 @@ export class SimplePermissionHandler
     }
 
     return {
-      result: request.permission.hasSome(
-        PermissionAttribute.CREATE,
-        PermissionAttribute.UPDATE,
-        PermissionAttribute.DELETE,
-      )
-        ? AuthorizeResult.DENY
-        : AuthorizeResult.ALLOW,
+      result:
+        request.permission.attributes.CRUD_ACTION === CRUDAction.READ
+          ? AuthorizeResult.ALLOW
+          : AuthorizeResult.DENY,
     } as AuthorizeResponse;
   }
 }

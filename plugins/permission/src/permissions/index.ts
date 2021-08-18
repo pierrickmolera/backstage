@@ -15,6 +15,8 @@
  */
 
 export type { PermissionJSON } from './permission';
+export type { PermissionAttributes } from './attributes';
+
 export { Permission } from './permission';
-export { PermissionAttribute } from './attributes';
+export { CRUDAction } from './attributes';
 export { createPermissions } from './util';
