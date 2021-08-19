@@ -22,6 +22,8 @@ import {
 } from '@backstage/plugin-permission';
 import { PermissionHandler } from './types';
 
+// TODO(mtlewis/orkuhunter): Maybe we can find a clearer name for this?
+// "AllowAllPermissionHander"? "UnrestrictedPermissionHandler"?
 export class NoopPermissionHandler implements PermissionHandler {
   async handle(
     _request: AuthorizeRequest<AuthorizeRequestContext>,
