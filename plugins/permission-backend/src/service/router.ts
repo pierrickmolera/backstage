@@ -28,15 +28,20 @@ import {
 import { PermissionHandler } from '../handler';
 
 export interface RouterOptions {
-  logger: Logger;
-  config: Config;
+  env: {
+    logger: Logger;
+    config: Config;
+  };
   permissionHandler: PermissionHandler;
 }
 
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {
-  const { logger, config, permissionHandler } = options;
+  const {
+    env: { logger, config },
+    permissionHandler,
+  } = options;
   const discovery = SingleHostDiscovery.fromConfig(config);
   const identity = new IdentityClient({
     discovery,
