@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import {
   AuthorizeRequest,
   AuthorizeRequestContext,
   AuthorizeResponse,
   AuthorizeResult,
-} from '@backstage/plugin-permission';
+} from '@backstage/permission-common';
+import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import { PermissionHandler } from './types';
 
 // TODO(mtlewis/orkuhunter): Maybe we can find a clearer name for this?

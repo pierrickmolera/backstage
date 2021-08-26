@@ -24,7 +24,7 @@ import {
   AuthorizeRequestJSON,
   AuthorizeResponse,
   Permission,
-} from '@backstage/plugin-permission';
+} from '@backstage/permission-common';
 import { PermissionHandler } from '../handler';
 
 export interface RouterOptions {

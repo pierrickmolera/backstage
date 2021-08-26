@@ -18,7 +18,7 @@ import {
   AuthorizeRequest,
   AuthorizeRequestContext,
   AuthorizeResponse,
-} from '@backstage/plugin-permission';
+} from '@backstage/permission-common';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 
 export interface PermissionHandler<
