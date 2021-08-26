@@ -20,15 +20,12 @@ import {
   AuthorizeResult,
   AuthorizeResponse,
   CRUDAction,
-} from '@backstage/plugin-permission';
+} from '@backstage/permission-common';
 import { PermissionHandler } from '@backstage/plugin-permission-backend';
-import { EntityContext } from '@backstage/plugin-permission-module-catalog';
 
-export class SimplePermissionHandler
-  implements PermissionHandler<EntityContext>
-{
+export class SimplePermissionHandler implements PermissionHandler<any> {
   async handle(
-    request: AuthorizeRequest,
+    request: AuthorizeRequest<any>,
     identity?: BackstageIdentity,
   ): Promise<AuthorizeResponse> {
     if (identity) {
