@@ -16,8 +16,9 @@
 
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { getEntityName } from '@backstage/catalog-model';
-import { Permission, usePermission } from '@backstage/plugin-permission';
-import { EntityContext } from '../api';
+import { Permission } from '@backstage/permission-common';
+import { usePermission } from '@backstage/plugin-permission';
+import { EntityContext } from '../types';
 
 export const useEntityPermission = (permission: Permission) => {
   // TODO(mtlewis/orkohunter): what happens if there's no entity?

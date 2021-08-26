@@ -14,4 +14,9 @@
  * limitations under the License.
  */
 
-export { PermissionClient } from './PermissionClient';
+import { EntityName } from '@backstage/catalog-model';
+
+export type EntityContext = {
+  // TODO(mtlewis/orkohunter): Think about passing ONLY entity ref instead of all of entity, and all the relations are fetched from Catalog backend.
+  entityName: EntityName;
+};
