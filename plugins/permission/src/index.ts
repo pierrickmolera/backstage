@@ -14,8 +14,5 @@
  * limitations under the License.
  */
 
-export * from './client';
 export * from './components';
 export * from './hooks';
-export * from './permissions';
-export * from './api';

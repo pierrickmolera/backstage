@@ -17,8 +17,8 @@
 import React, { ComponentProps, ReactElement } from 'react';
 import { Route } from 'react-router';
 import { useApp } from '@backstage/core-plugin-api';
-import { Permission } from '../permissions';
 import { usePermission } from '../hooks';
+import { Permission } from '@backstage/permission-common';
 
 export const PermissionedRoute = ({
   permission,
