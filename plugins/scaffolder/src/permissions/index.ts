@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createPermissions } from '@backstage/plugin-permission';
+import { createPermissions } from '@backstage/permission-common';
 
 export const ScaffolderPermission = createPermissions({
   ROUTES: {
