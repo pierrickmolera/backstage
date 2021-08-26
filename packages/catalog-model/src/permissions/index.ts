@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createPermissions, CRUDAction } from '@backstage/plugin-permission';
+import { createPermissions, CRUDAction } from '@backstage/permission-common';
 
 export const CatalogPermission = createPermissions({
   ENTITY_READ: {
