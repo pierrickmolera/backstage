@@ -18,7 +18,7 @@ import { createPermissions } from '@backstage/permission-common';
 
 export const ScaffolderPermission = createPermissions({
   ROUTES: {
-    id: 'backstage.scaffolder.routes',
+    name: 'backstage.scaffolder.routes',
     attributes: {
       ROUTE_VISIBILITY: true,
     },

@@ -22,7 +22,9 @@ import {
 import { ApiRef, createApiRef } from '../system';
 
 export type PermissionApi<T> = {
-  authorize(request: AuthorizeRequest<T>): Promise<AuthorizeResponse>;
+  authorize(
+    requests: Array<AuthorizeRequest<T>>,
+  ): Promise<Array<AuthorizeResponse>>;
 };
 
 export const permissionApiRef: ApiRef<PermissionApi<AuthorizeRequestContext>> =

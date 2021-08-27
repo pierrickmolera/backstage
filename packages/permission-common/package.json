@@ -33,7 +33,8 @@
     "@backstage/core-plugin-api": "^0.1.6",
     "@backstage/config": "^0.1.5",
     "@backstage/errors": "^0.1.1",
-    "cross-fetch": "^3.0.6"
+    "cross-fetch": "^3.0.6",
+    "uuid": "^8.0.0"
   },
   "devDependencies": {
     "@backstage/cli": "^0.7.6",

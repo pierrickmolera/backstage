@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 import {
-  AuthorizeRequest,
   AuthorizeRequestContext,
-  AuthorizeResponse,
   AuthorizeResult,
+  IdentifiedAuthorizeRequest,
+  IdentifiedAuthorizeResponse,
 } from '@backstage/permission-common';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import { PermissionHandler } from './types';
 
-// TODO(mtlewis/orkuhunter): Maybe we can find a clearer name for this?
-// "AllowAllPermissionHander"? "UnrestrictedPermissionHandler"?
-export class NoopPermissionHandler implements PermissionHandler {
+export class AllowAllPermissionHandler implements PermissionHandler {
   async handle(
-    _request: AuthorizeRequest<AuthorizeRequestContext>,
+    requests: Array<IdentifiedAuthorizeRequest<AuthorizeRequestContext>>,
     _user?: BackstageIdentity,
-  ): Promise<AuthorizeResponse> {
-    return {
+  ): Promise<Array<IdentifiedAuthorizeResponse>> {
+    return requests.map(request => ({
+      id: request.id,
       result: AuthorizeResult.ALLOW,
-    };
+    }));
   }
 }

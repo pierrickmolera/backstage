@@ -17,18 +17,21 @@
 import { PermissionAttributes } from './attributes';
 
 export type PermissionJSON = {
-  id: string;
+  name: string;
   attributes: PermissionAttributes;
 };
 
 export class Permission {
-  constructor(readonly id: string, readonly attributes: PermissionAttributes) {}
+  constructor(
+    readonly name: string,
+    readonly attributes: PermissionAttributes,
+  ) {}
 
   is(permission: Permission) {
-    return this.id === permission.id;
+    return this.name === permission.name;
   }
 
-  static fromJSON({ id, attributes }: PermissionJSON) {
-    return new Permission(id, attributes);
+  static fromJSON({ name, attributes }: PermissionJSON) {
+    return new Permission(name, attributes);
   }
 }

@@ -57,10 +57,12 @@ export const usePermission = <
   const permissionApi = useApi(permissionApiRef);
 
   const state = useAsync(async () => {
-    const { result } = await permissionApi.authorize({
-      permission,
-      context,
-    });
+    const [{ result }] = await permissionApi.authorize([
+      {
+        permission,
+        context,
+      },
+    ]);
 
     return result;
   }, [permissionApi, permission]);

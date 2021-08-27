@@ -15,17 +15,17 @@
  */
 
 import {
-  AuthorizeRequest,
   AuthorizeRequestContext,
-  AuthorizeResponse,
+  IdentifiedAuthorizeRequest,
+  IdentifiedAuthorizeResponse,
 } from '@backstage/permission-common';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 
-export interface PermissionHandler<
-  T extends AuthorizeRequestContext = AuthorizeRequestContext,
-> {
+export interface PermissionHandler {
+  // TODO(timbonicus/joeporpeglia): We lose the generic and typing since we're passed all types of requests here; can we restore this somehow? Type guard shouldHandle method?
+  // <T extends AuthorizeRequestContext = AuthorizeRequestContext>
   handle(
-    request: AuthorizeRequest<T>,
+    request: Array<IdentifiedAuthorizeRequest<AuthorizeRequestContext>>,
     user?: BackstageIdentity,
-  ): Promise<AuthorizeResponse>;
+  ): Promise<Array<IdentifiedAuthorizeResponse>>;
 }

@@ -16,33 +16,39 @@
 
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import {
-  AuthorizeRequest,
   AuthorizeResult,
-  AuthorizeResponse,
   CRUDAction,
+  AuthorizeRequestContext,
+  IdentifiedAuthorizeRequest,
+  IdentifiedAuthorizeResponse,
 } from '@backstage/permission-common';
 import { PermissionHandler } from '@backstage/plugin-permission-backend';
 
-export class SimplePermissionHandler implements PermissionHandler<any> {
+export class SimplePermissionHandler implements PermissionHandler {
   async handle(
-    request: AuthorizeRequest<any>,
+    requests: Array<IdentifiedAuthorizeRequest<AuthorizeRequestContext>>,
     identity?: BackstageIdentity,
-  ): Promise<AuthorizeResponse> {
-    if (identity) {
-      return {
-        // TODO: why does this enum work? It's a frontend package. Should move to a common package.
-        result: AuthorizeResult.ALLOW,
-      };
-    }
+  ): Promise<Array<IdentifiedAuthorizeResponse>> {
+    const response = requests.map(request => {
+      if (identity) {
+        return {
+          id: request.id,
+          result: AuthorizeResult.ALLOW,
+        };
+      }
 
-    if (request.permission.attributes.CRUD_ACTION === CRUDAction.READ) {
-      return {
-        result: AuthorizeResult.ALLOW,
-      };
-    }
+      if (request.permission.attributes.CRUD_ACTION === CRUDAction.READ) {
+        return {
+          id: request.id,
+          result: AuthorizeResult.ALLOW,
+        };
+      }
 
-    return {
-      result: AuthorizeResult.DENY,
-    };
+      return {
+        id: request.id,
+        result: AuthorizeResult.DENY,
+      };
+    });
+    return response;
   }
 }

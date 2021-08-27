@@ -16,15 +16,19 @@
 
 import { ResponseError } from '@backstage/errors';
 import fetch from 'cross-fetch';
+import * as uuid from 'uuid';
 
 // TODO(mtlewis): Seems from the CatalogClient example that we shouldn't
 // be depending on core-plugin-api. Probably worth a wider conversation
 // about organization of permission packages and dependencies.
-import { DiscoveryApi } from '@backstage/core-plugin-api';
+import type { DiscoveryApi } from '@backstage/core-plugin-api';
 import {
+  AuthorizeResult,
   AuthorizeRequest,
   AuthorizeRequestContext,
   AuthorizeResponse,
+  IdentifiedAuthorizeRequest,
+  IdentifiedAuthorizeResponse,
 } from './types';
 
 export type PermissionRequestOptions = {
@@ -44,7 +48,7 @@ export class PermissionClient<
     requests: AuthorizeRequest<T>[],
     options?: PermissionRequestOptions,
   ): Promise<AuthorizeResponse[]> {
-    // TODO(mtlewis/orkohunter) validate response as AuthorizeResponse.
+    // TODO(timbonicus/joeporpeglia): we should batch requests here for some ms, and potentially de-duplicate?
     return this.post('/authorize', requests, options);
   }
 
@@ -56,10 +60,16 @@ export class PermissionClient<
     path: string,
     requests: AuthorizeRequest<T>[],
     options?: PermissionRequestOptions,
-  ): Promise<any> {
+  ): Promise<AuthorizeResponse[]> {
+    const identifiedRequests: IdentifiedAuthorizeRequest<T>[] = requests.map(
+      request => ({
+        id: uuid.v4(),
+        ...request,
+      }),
+    );
     const response = await fetch(await this.urlFor(path), {
       method: 'POST',
-      body: JSON.stringify(requests),
+      body: JSON.stringify(identifiedRequests),
       headers: {
         ...this.authHeaders(options),
         'content-type': 'application/json',
@@ -70,7 +80,32 @@ export class PermissionClient<
       throw await ResponseError.fromResponse(response);
     }
 
-    return response.json();
+    const identifiedResponses = await response.json();
+    this.assertValidResponses(identifiedRequests, identifiedResponses);
+    const responsesById = identifiedResponses.reduce((acc, r) => {
+      acc[r.id] = r;
+      return acc;
+    }, {} as Record<string, IdentifiedAuthorizeResponse>);
+
+    return identifiedRequests.map(request => responsesById[request.id]);
+  }
+
+  private assertValidResponses(
+    requests: IdentifiedAuthorizeRequest<T>[],
+    json: any,
+  ): asserts json is IdentifiedAuthorizeResponse[] {
+    const responses = Array.isArray(json) ? json : [];
+    const authorizedResponses: IdentifiedAuthorizeResponse[] = responses.filter(
+      (r: any): r is IdentifiedAuthorizeResponse =>
+        typeof r === 'object' &&
+        typeof r.id === 'string' &&
+        r.result in AuthorizeResult,
+    );
+    const responseIds = authorizedResponses.map(r => r.id);
+    const hasAllRequestIds = requests.every(r => responseIds.includes(r.id));
+    if (!hasAllRequestIds) {
+      throw new Error('Unexpected response from permission-backend');
+    }
   }
 
   private authHeaders(

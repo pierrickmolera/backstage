@@ -19,6 +19,7 @@ import { Permission, PermissionJSON } from './permissions';
 export enum AuthorizeResult {
   DENY = 'DENY',
   ALLOW = 'ALLOW',
+  DEFER = 'DEFER',
 }
 
 export type AuthorizeRequestContext = Record<string, any>;
@@ -28,13 +29,23 @@ export type AuthorizeRequest<T extends AuthorizeRequestContext> = {
   context: T;
 };
 
+export type IdentifiedAuthorizeRequest<T extends AuthorizeRequestContext> =
+  AuthorizeRequest<T> & {
+    id: string;
+  };
+
 export type AuthorizeResponse = {
   result: AuthorizeResult;
 };
 
-export type AuthorizeRequestJSON<
+export type IdentifiedAuthorizeResponse = AuthorizeResponse & {
+  id: string;
+};
+
+export type IdentifiedAuthorizeRequestJSON<
   T extends AuthorizeRequestContext = AuthorizeRequestContext,
 > = {
+  id: string;
   permission: PermissionJSON;
   context: T;
 };

@@ -35,11 +35,11 @@ export class IdentityPermissionApi<T> implements PermissionApi<T> {
     this.permissionClient = new PermissionClient<T>({ discoveryApi });
   }
 
-  async authorize(options: AuthorizeRequest<T>): Promise<AuthorizeResponse> {
-    return (
-      await this.permissionClient.authorize([options], {
-        token: await this.identityApi.getIdToken(),
-      })
-    )[0];
+  async authorize(
+    requests: Array<AuthorizeRequest<T>>,
+  ): Promise<Array<AuthorizeResponse>> {
+    return await this.permissionClient.authorize(requests, {
+      token: await this.identityApi.getIdToken(),
+    });
   }
 }

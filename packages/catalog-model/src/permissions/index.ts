@@ -18,13 +18,13 @@ import { createPermissions, CRUDAction } from '@backstage/permission-common';
 
 export const CatalogPermission = createPermissions({
   ENTITY_READ: {
-    id: 'catalog.entity.read',
+    name: 'catalog.entity.read',
     attributes: {
       CRUD_ACTION: CRUDAction.READ,
     },
   },
   ENTITY_UNREGISTER: {
-    id: 'catalog.entity.unregister',
+    name: 'catalog.entity.unregister',
     attributes: {
       CRUD_ACTION: CRUDAction.DELETE,
     },

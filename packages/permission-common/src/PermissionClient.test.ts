@@ -18,7 +18,7 @@ import { RestContext, rest, ResponseComposition } from 'msw';
 import { setupServer } from 'msw/node';
 import { PermissionClient } from './PermissionClient';
 import { DiscoveryApi } from '@backstage/core-plugin-api';
-import { AuthorizeResponse, AuthorizeResult } from './types';
+import { AuthorizeResult, IdentifiedAuthorizeResponse } from './types';
 import { createPermissions } from './permissions';
 
 const server = setupServer();
@@ -32,7 +32,7 @@ const discoveryApi: DiscoveryApi = {
 
 const mockPermissions = createPermissions({
   TEST: {
-    id: 'test.permission',
+    name: 'test.permission',
     attributes: {},
   },
 });
@@ -52,14 +52,15 @@ describe('PermissionClient', () => {
     const mockAuthorizeHandler = jest.fn(
       (
         _req,
-        res: ResponseComposition<AuthorizeResponse>,
+        res: ResponseComposition<Array<IdentifiedAuthorizeResponse>>,
         { json }: RestContext,
       ) => {
-        const responseBody: AuthorizeResponse = {
+        const responseBody: IdentifiedAuthorizeResponse = {
+          id: _req.body[0].id,
           result: AuthorizeResult.ALLOW,
         };
 
-        return res(json(responseBody));
+        return res(json([responseBody]));
       },
     );
 
@@ -92,10 +93,12 @@ describe('PermissionClient', () => {
 
       const request = mockAuthorizeHandler.mock.calls[0][0];
 
-      expect(request.body).toEqual({
-        permission: mockPermissions.TEST,
-        context: { foo: 'bar' },
-      });
+      expect(request.body[0]).toEqual(
+        expect.objectContaining({
+          permission: mockPermissions.TEST,
+          context: { foo: 'bar' },
+        }),
+      );
     });
 
     it('should return the response from the fetch request', async () => {
@@ -106,7 +109,9 @@ describe('PermissionClient', () => {
         },
       ]);
 
-      expect(response).toEqual({ result: AuthorizeResult.ALLOW });
+      expect(response[0]).toEqual(
+        expect.objectContaining({ result: AuthorizeResult.ALLOW }),
+      );
     });
 
     it('should not include authorization headers if no token is supplied', async () => {
@@ -143,7 +148,7 @@ describe('PermissionClient', () => {
         mockAuthorizeHandler.mockImplementationOnce(
           (
             _req,
-            res: ResponseComposition<AuthorizeResponse>,
+            res: ResponseComposition<IdentifiedAuthorizeResponse[]>,
             { status }: RestContext,
           ) => {
             return res(status(401));

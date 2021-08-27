@@ -21,27 +21,23 @@ import { Logger } from 'winston';
 import { IdentityClient } from '@backstage/plugin-auth-backend';
 import { Config } from '@backstage/config';
 import {
-  AuthorizeRequestJSON,
-  AuthorizeResponse,
+  IdentifiedAuthorizeRequestJSON,
+  AuthorizeResult,
+  IdentifiedAuthorizeResponse,
   Permission,
 } from '@backstage/permission-common';
 import { PermissionHandler } from '../handler';
 
 export interface RouterOptions {
-  env: {
-    logger: Logger;
-    config: Config;
-  };
-  permissionHandler: PermissionHandler;
+  logger: Logger;
+  config: Config;
+  permissionHandlers: PermissionHandler[];
 }
 
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {
-  const {
-    env: { logger, config },
-    permissionHandler,
-  } = options;
+  const { config, permissionHandlers } = options;
   const discovery = SingleHostDiscovery.fromConfig(config);
   const identity = new IdentityClient({
     discovery,
@@ -54,8 +50,8 @@ export async function createRouter(
   router.post(
     '/authorize',
     async (
-      req: Request<AuthorizeRequestJSON[]>,
-      res: Response<AuthorizeResponse[]>,
+      req: Request<IdentifiedAuthorizeRequestJSON[]>,
+      res: Response<IdentifiedAuthorizeResponse[]>,
     ) => {
       // TODO(mtlewis/orkohunter): Payload too large errors happen when internal backends (techdocs, search, etc.) try
       // to fetch all of entities.
@@ -63,38 +59,40 @@ export async function createRouter(
       // Fix2: We should probably not filter requests from other backends -
       // either by allowing them a superuser token or treating their requests separately from a user's request.
       const token = IdentityClient.getBearerToken(req.header('authorization'));
+      const user = token ? await identity.authenticate(token) : undefined;
 
-      if (token) {
-        const user = await identity.authenticate(token);
-        logger.info(`authorizing as user: ${user.id}...`);
+      const body: IdentifiedAuthorizeRequestJSON[] = req.body;
+      const authorizeRequests = body.map(request => {
+        const { id, permission, context } = request;
+        return {
+          id,
+          permission: Permission.fromJSON(permission),
+          context,
+        };
+      });
 
-        res.json(
-          await Promise.all(
-            req.body.map(({ permission, context }: AuthorizeRequestJSON) =>
-              permissionHandler.handle(
-                {
-                  permission: Permission.fromJSON(permission),
-                  context,
-                },
-                user,
-              ),
-            ),
-          ),
+      // TODO(timbonicus/joeporpeglia): wire up frontend to supply id, accept array of permission requests
+      const handled: Record<string, IdentifiedAuthorizeResponse | undefined> =
+        {};
+      for (const handler of permissionHandlers) {
+        const unhandled = authorizeRequests.filter(
+          authorizeRequest => !handled[authorizeRequest.id],
         );
-      } else {
-        logger.info('authorizing anonymously...');
-
-        res.json(
-          await Promise.all(
-            req.body.map(({ permission, context }: AuthorizeRequestJSON) =>
-              permissionHandler.handle({
-                permission: Permission.fromJSON(permission),
-                context,
-              }),
-            ),
-          ),
-        );
+        const response = await handler.handle(unhandled, user);
+        response.forEach(r => {
+          if (r.result !== AuthorizeResult.DEFER) {
+            handled[r.id] = r;
+          }
+        });
       }
+
+      const response = authorizeRequests.map(authorizeRequest => ({
+        id: authorizeRequest.id,
+        // Default to DENY for any requests not handled by any PermissionHandler
+        result: handled[authorizeRequest.id]?.result ?? AuthorizeResult.DENY,
+      }));
+
+      res.json(response);
     },
   );
 

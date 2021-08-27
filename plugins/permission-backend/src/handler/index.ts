@@ -15,4 +15,4 @@
  */
 
 export type { PermissionHandler } from './types';
-export { NoopPermissionHandler } from './NoopPermissionHandler';
+export { AllowAllPermissionHandler } from './AllowAllPermissionHandler';
