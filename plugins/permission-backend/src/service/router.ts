@@ -18,13 +18,18 @@ import { errorHandler, SingleHostDiscovery } from '@backstage/backend-common';
 import express, { Request, Response } from 'express';
 import Router from 'express-promise-router';
 import { Logger } from 'winston';
-import { IdentityClient } from '@backstage/plugin-auth-backend';
+import {
+  BackstageIdentity,
+  IdentityClient,
+} from '@backstage/plugin-auth-backend';
 import { Config } from '@backstage/config';
 import {
+  IdentifiedAuthorizeRequest,
   IdentifiedAuthorizeRequestJSON,
   AuthorizeResult,
   IdentifiedAuthorizeResponse,
   Permission,
+  AuthorizeRequestContext,
 } from '@backstage/permission-common';
 import { PermissionHandler } from '../handler';
 
@@ -33,6 +38,29 @@ export interface RouterOptions {
   config: Config;
   permissionHandlers: PermissionHandler[];
 }
+
+const handleRequest = async (
+  { id, ...request }: IdentifiedAuthorizeRequest<AuthorizeRequestContext>,
+  user: BackstageIdentity | undefined,
+  permissionHandlers: PermissionHandler[],
+): Promise<IdentifiedAuthorizeResponse> => {
+  for (const handler of permissionHandlers) {
+    const response = await handler.handle(request, user);
+
+    if (response.result !== AuthorizeResult.DEFER) {
+      return {
+        ...response,
+        id,
+      };
+    }
+  }
+
+  // Default to DENY for any requests not handled by any PermissionHandler
+  return {
+    result: AuthorizeResult.DENY,
+    id,
+  };
+};
 
 export async function createRouter(
   options: RouterOptions,
@@ -62,37 +90,19 @@ export async function createRouter(
       const user = token ? await identity.authenticate(token) : undefined;
 
       const body: IdentifiedAuthorizeRequestJSON[] = req.body;
-      const authorizeRequests = body.map(request => {
-        const { id, permission, context } = request;
-        return {
-          id,
-          permission: Permission.fromJSON(permission),
-          context,
-        };
-      });
-
-      // TODO(timbonicus/joeporpeglia): wire up frontend to supply id, accept array of permission requests
-      const handled: Record<string, IdentifiedAuthorizeResponse | undefined> =
-        {};
-      for (const handler of permissionHandlers) {
-        const unhandled = authorizeRequests.filter(
-          authorizeRequest => !handled[authorizeRequest.id],
-        );
-        const response = await handler.handle(unhandled, user);
-        response.forEach(r => {
-          if (r.result !== AuthorizeResult.DEFER) {
-            handled[r.id] = r;
-          }
-        });
-      }
-
-      const response = authorizeRequests.map(authorizeRequest => ({
-        id: authorizeRequest.id,
-        // Default to DENY for any requests not handled by any PermissionHandler
-        result: handled[authorizeRequest.id]?.result ?? AuthorizeResult.DENY,
+      const authorizeRequests = body.map(({ permission, ...rest }) => ({
+        ...rest,
+        permission: Permission.fromJSON(permission),
       }));
 
-      res.json(response);
+      // TODO(timbonicus/joeporpeglia): wire up frontend to supply id, accept array of permission requests
+      res.json(
+        await Promise.all(
+          authorizeRequests.map(request =>
+            handleRequest(request, user, permissionHandlers),
+          ),
+        ),
+      );
     },
   );
 

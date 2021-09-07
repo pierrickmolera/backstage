@@ -19,36 +19,30 @@ import {
   AuthorizeResult,
   CRUDAction,
   AuthorizeRequestContext,
-  IdentifiedAuthorizeRequest,
-  IdentifiedAuthorizeResponse,
+  AuthorizeRequest,
+  AuthorizeResponse,
 } from '@backstage/permission-common';
 import { PermissionHandler } from '@backstage/plugin-permission-backend';
 
 export class SimplePermissionHandler implements PermissionHandler {
   async handle(
-    requests: Array<IdentifiedAuthorizeRequest<AuthorizeRequestContext>>,
+    request: AuthorizeRequest<AuthorizeRequestContext>,
     identity?: BackstageIdentity,
-  ): Promise<Array<IdentifiedAuthorizeResponse>> {
-    const response = requests.map(request => {
-      if (identity) {
-        return {
-          id: request.id,
-          result: AuthorizeResult.ALLOW,
-        };
-      }
-
-      if (request.permission.attributes.CRUD_ACTION === CRUDAction.READ) {
-        return {
-          id: request.id,
-          result: AuthorizeResult.ALLOW,
-        };
-      }
-
+  ): Promise<AuthorizeResponse> {
+    if (identity) {
       return {
-        id: request.id,
-        result: AuthorizeResult.DENY,
+        result: AuthorizeResult.ALLOW,
       };
-    });
-    return response;
+    }
+
+    if (request.permission.attributes.CRUD_ACTION === CRUDAction.READ) {
+      return {
+        result: AuthorizeResult.ALLOW,
+      };
+    }
+
+    return {
+      result: AuthorizeResult.DENY,
+    };
   }
 }
