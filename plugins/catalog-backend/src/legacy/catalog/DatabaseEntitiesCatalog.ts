@@ -65,6 +65,12 @@ export class DatabaseEntitiesCatalog implements EntitiesCatalog {
   ) {}
 
   async entities(request?: EntitiesRequest): Promise<EntitiesResponse> {
+    // TODO(authorization-framework): Load authorize filters
+    // const permission = CatalogPermission.ENTITY_READ;
+    // const authorizationFilters = await this.permissionApi.authorizeFilters(
+    //   { permission },
+    //   { token: request?.authorizationToken },
+    // );
     const dbRequest: DbEntitiesRequest = {
       filter: request?.filter,
       pagination: request?.pagination,

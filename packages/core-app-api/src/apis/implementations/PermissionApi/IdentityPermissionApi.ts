@@ -20,6 +20,7 @@ import {
   PermissionApi,
 } from '@backstage/core-plugin-api';
 import {
+  AuthorizeFiltersResponse,
   AuthorizeRequest,
   AuthorizeResponse,
   PermissionClient,
@@ -39,6 +40,14 @@ export class IdentityPermissionApi<T> implements PermissionApi<T> {
     requests: Array<AuthorizeRequest<T>>,
   ): Promise<Array<AuthorizeResponse>> {
     return await this.permissionClient.authorize(requests, {
+      token: await this.identityApi.getIdToken(),
+    });
+  }
+
+  async authorizeFilters(
+    request: AuthorizeRequest<T>,
+  ): Promise<AuthorizeFiltersResponse> {
+    return await this.permissionClient.authorizeFilters(request, {
       token: await this.identityApi.getIdToken(),
     });
   }

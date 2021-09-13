@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
+import { Filters } from '@backstage/backend-common';
 import { Permission, PermissionJSON } from './permissions';
 
 export enum AuthorizeResult {
   DENY = 'DENY',
   ALLOW = 'ALLOW',
-  DEFER = 'DEFER',
+  MAYBE = 'MAYBE',
 }
 
 export type AuthorizeRequestContext = Record<string, any>;
 
 export type AuthorizeRequest<T extends AuthorizeRequestContext> = {
   permission: Permission;
-  context: T;
+  context?: T;
 };
 
 export type IdentifiedAuthorizeRequest<T extends AuthorizeRequestContext> =
@@ -35,8 +36,15 @@ export type IdentifiedAuthorizeRequest<T extends AuthorizeRequestContext> =
   };
 
 export type AuthorizeResponse = {
-  result: AuthorizeResult;
+  result: AuthorizeResult.ALLOW | AuthorizeResult.DENY;
 };
+
+export type AuthorizeFiltersResponse =
+  | AuthorizeResponse
+  | {
+      result: AuthorizeResult.MAYBE;
+      conditions: Filters;
+    };
 
 export type IdentifiedAuthorizeResponse = AuthorizeResponse & {
   id: string;

@@ -23,6 +23,7 @@ import * as uuid from 'uuid';
 // about organization of permission packages and dependencies.
 import type { DiscoveryApi } from '@backstage/core-plugin-api';
 import {
+  AuthorizeFiltersResponse,
   AuthorizeResult,
   AuthorizeRequest,
   AuthorizeRequestContext,
@@ -49,14 +50,21 @@ export class PermissionClient<
     options?: PermissionRequestOptions,
   ): Promise<AuthorizeResponse[]> {
     // TODO(timbonicus/joeporpeglia): we should batch requests here for some ms, and potentially de-duplicate?
-    return this.post('/authorize', requests, options);
+    return this._authorize('/authorize', requests, options);
+  }
+
+  async authorizeFilters(
+    request: AuthorizeRequest<T>,
+    options?: PermissionRequestOptions,
+  ): Promise<AuthorizeFiltersResponse> {
+    return this._authorizeFilters('/authorizeFilters', request, options);
   }
 
   //
   // Private methods
   //
 
-  private async post(
+  private async _authorize(
     path: string,
     requests: AuthorizeRequest<T>[],
     options?: PermissionRequestOptions,
@@ -67,21 +75,14 @@ export class PermissionClient<
         ...request,
       }),
     );
-    const response = await fetch(await this.urlFor(path), {
-      method: 'POST',
-      body: JSON.stringify(identifiedRequests),
-      headers: {
-        ...this.authHeaders(options),
-        'content-type': 'application/json',
-      },
-    });
 
-    if (!response.ok) {
-      throw await ResponseError.fromResponse(response);
-    }
-
-    const identifiedResponses = await response.json();
+    const identifiedResponses = await this.post(
+      path,
+      identifiedRequests,
+      options,
+    );
     this.assertValidResponses(identifiedRequests, identifiedResponses);
+
     const responsesById = identifiedResponses.reduce((acc, r) => {
       acc[r.id] = r;
       return acc;
@@ -108,6 +109,15 @@ export class PermissionClient<
     }
   }
 
+  private async _authorizeFilters(
+    path: string,
+    request: AuthorizeRequest<T>,
+    options?: PermissionRequestOptions,
+  ): Promise<AuthorizeFiltersResponse> {
+    const response = await this.post(path, [request], options);
+    return response as AuthorizeFiltersResponse;
+  }
+
   private authHeaders(
     options?: PermissionRequestOptions,
   ): Record<string, string> {
@@ -116,5 +126,24 @@ export class PermissionClient<
 
   private async urlFor(path: string): Promise<string> {
     return `${await this.discoveryApi.getBaseUrl('permission')}${path}`;
+  }
+
+  private async post(
+    path: string,
+    requests: AuthorizeRequest<T>[],
+    options?: PermissionRequestOptions,
+  ): Promise<any> {
+    const response = await fetch(await this.urlFor(path), {
+      method: 'POST',
+      body: JSON.stringify(requests),
+      headers: {
+        ...this.authHeaders(options),
+        'content-type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw await ResponseError.fromResponse(response);
+    }
+    return response.json();
   }
 }

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Filters } from '@backstage/backend-common';
 import type {
   Entity,
   EntityName,
@@ -41,7 +42,8 @@ export type DbEntityRequest = {
 
 /** @deprecated This was part of the legacy catalog engine */
 export type DbEntitiesRequest = {
-  filter?: EntityFilter;
+  filter?: Filters;
+  authorizationFilters?: Filters;
   pagination?: EntityPagination;
 };
 

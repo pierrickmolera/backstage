@@ -16,6 +16,7 @@
 
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import {
+  AuthorizeFiltersResponse,
   AuthorizeResult,
   CRUDAction,
   AuthorizeRequestContext,
@@ -23,6 +24,7 @@ import {
   AuthorizeResponse,
 } from '@backstage/permission-common';
 import { PermissionHandler } from '@backstage/plugin-permission-backend';
+import { parseEntityName, stringifyEntityRef } from '@backstage/catalog-model';
 
 export class SimplePermissionHandler implements PermissionHandler {
   async handle(
@@ -41,6 +43,40 @@ export class SimplePermissionHandler implements PermissionHandler {
       };
     }
 
+    return {
+      result: AuthorizeResult.DENY,
+    };
+  }
+
+  async authorizeFilters(
+    _request: AuthorizeRequest<AuthorizeRequestContext>,
+    identity?: BackstageIdentity,
+  ): Promise<AuthorizeFiltersResponse> {
+    if (identity?.id) {
+      // TODO(authorization-framework): need a nicer pattern here, builder?
+      return {
+        result: AuthorizeResult.MAYBE,
+        conditions: {
+          anyOf: [
+            {
+              allOf: [
+                {
+                  key: 'relations.ownedBy',
+                  matchValueIn: [
+                    stringifyEntityRef(
+                      parseEntityName(identity.id, {
+                        defaultKind: 'User',
+                        defaultNamespace: 'default',
+                      }),
+                    ),
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      };
+    }
     return {
       result: AuthorizeResult.DENY,
     };

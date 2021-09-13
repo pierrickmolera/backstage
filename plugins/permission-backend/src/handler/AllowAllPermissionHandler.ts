@@ -18,6 +18,7 @@ import {
   AuthorizeResult,
   AuthorizeRequest,
   AuthorizeResponse,
+  AuthorizeFiltersResponse,
 } from '@backstage/permission-common';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import { PermissionHandler } from './types';
@@ -27,6 +28,15 @@ export class AllowAllPermissionHandler implements PermissionHandler {
     _request: AuthorizeRequest<AuthorizeRequestContext>,
     _user?: BackstageIdentity,
   ): Promise<AuthorizeResponse> {
+    return {
+      result: AuthorizeResult.ALLOW,
+    };
+  }
+
+  async authorizeFilters(
+    _request: AuthorizeRequest<AuthorizeRequestContext>,
+    _user?: BackstageIdentity,
+  ): Promise<AuthorizeFiltersResponse> {
     return {
       result: AuthorizeResult.ALLOW,
     };

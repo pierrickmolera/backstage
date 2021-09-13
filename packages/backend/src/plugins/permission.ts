@@ -26,6 +26,6 @@ export default async function createPlugin(
   return await createRouter({
     logger,
     config,
-    permissionHandlers: [new SimplePermissionHandler()],
+    permissionHandler: new SimplePermissionHandler(),
   });
 }

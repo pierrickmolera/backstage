@@ -107,6 +107,9 @@ export async function createRouter(
     router
       .get('/entities', async (req, res) => {
         const { entities, pageInfo } = await entitiesCatalog.entities({
+          authorizationToken: IdentityClient.getBearerToken(
+            req.header('authorization'),
+          ),
           filter: parseEntityFilterParams(req.query),
           fields: parseEntityTransformParams(req.query),
           pagination: parseEntityPaginationParams(req.query),
@@ -120,28 +123,8 @@ export async function createRouter(
           res.setHeader('link', `<${url.pathname}${url.search}>; rel="next"`);
         }
 
-        // TODO(mtlewis): the entity won't necessarily contain the metadata we
-        // need to get the entity name at this point - we need to extend the fields
-        // above to add the metadata and then remove it if it's not needed on
-        // the response.
-        const authorizeResponse = await permissionApi.authorize(
-          entities.map(entity => ({
-            permission: CatalogPermission.ENTITY_READ,
-            context: {
-              entityName: getEntityName(entity),
-            },
-          })),
-          {
-            token: IdentityClient.getBearerToken(req.header('authorization')),
-          },
-        );
-
         // TODO(freben): encode the pageInfo in the response
-        res.json(
-          entities.filter((_entity, index) => {
-            return authorizeResponse[index].result === AuthorizeResult.ALLOW;
-          }),
-        );
+        res.json(entities);
       })
       .post('/entities', async (req, res) => {
         /*

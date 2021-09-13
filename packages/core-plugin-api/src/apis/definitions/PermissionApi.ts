@@ -18,6 +18,7 @@ import {
   AuthorizeRequest,
   AuthorizeResponse,
   AuthorizeRequestContext,
+  AuthorizeFiltersResponse,
 } from '@backstage/permission-common';
 import { ApiRef, createApiRef } from '../system';
 
@@ -25,6 +26,10 @@ export type PermissionApi<T> = {
   authorize(
     requests: Array<AuthorizeRequest<T>>,
   ): Promise<Array<AuthorizeResponse>>;
+
+  authorizeFilters(
+    request: AuthorizeRequest<T>,
+  ): Promise<AuthorizeFiltersResponse>;
 };
 
 export const permissionApiRef: ApiRef<PermissionApi<AuthorizeRequestContext>> =

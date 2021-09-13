@@ -217,6 +217,8 @@ export class CommonDatabase implements Database {
 
     let entitiesQuery = tx<DbEntitiesRow>('entities');
 
+    // TODO(authorization-framework): cleanup to allow merging of user filters + auth filters
+    // const authorizationFilters = request?.authorizationFilters;
     for (const singleFilter of request?.filter?.anyOf ?? []) {
       entitiesQuery = entitiesQuery.orWhere(function singleFilterFn() {
         for (const {

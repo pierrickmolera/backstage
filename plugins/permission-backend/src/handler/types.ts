@@ -18,6 +18,7 @@ import {
   AuthorizeRequestContext,
   AuthorizeRequest,
   AuthorizeResponse,
+  AuthorizeFiltersResponse,
 } from '@backstage/permission-common';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 
@@ -28,4 +29,9 @@ export interface PermissionHandler {
     request: AuthorizeRequest<AuthorizeRequestContext>,
     user?: BackstageIdentity,
   ): Promise<AuthorizeResponse>;
+
+  authorizeFilters(
+    request: AuthorizeRequest<AuthorizeRequestContext>,
+    user?: BackstageIdentity,
+  ): Promise<AuthorizeFiltersResponse>;
 }

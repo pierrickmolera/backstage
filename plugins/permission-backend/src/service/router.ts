@@ -26,38 +26,27 @@ import { Config } from '@backstage/config';
 import {
   IdentifiedAuthorizeRequest,
   IdentifiedAuthorizeRequestJSON,
-  AuthorizeResult,
   IdentifiedAuthorizeResponse,
   Permission,
   AuthorizeRequestContext,
+  AuthorizeFiltersResponse,
 } from '@backstage/permission-common';
 import { PermissionHandler } from '../handler';
 
 export interface RouterOptions {
   logger: Logger;
   config: Config;
-  permissionHandlers: PermissionHandler[];
+  permissionHandler: PermissionHandler;
 }
 
 const handleRequest = async (
   { id, ...request }: IdentifiedAuthorizeRequest<AuthorizeRequestContext>,
   user: BackstageIdentity | undefined,
-  permissionHandlers: PermissionHandler[],
+  permissionHandler: PermissionHandler,
 ): Promise<IdentifiedAuthorizeResponse> => {
-  for (const handler of permissionHandlers) {
-    const response = await handler.handle(request, user);
-
-    if (response.result !== AuthorizeResult.DEFER) {
-      return {
-        ...response,
-        id,
-      };
-    }
-  }
-
-  // Default to DENY for any requests not handled by any PermissionHandler
+  const response = await permissionHandler.handle(request, user);
   return {
-    result: AuthorizeResult.DENY,
+    ...response,
     id,
   };
 };
@@ -65,7 +54,7 @@ const handleRequest = async (
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {
-  const { config, permissionHandlers } = options;
+  const { config, permissionHandler } = options;
   const discovery = SingleHostDiscovery.fromConfig(config);
   const identity = new IdentityClient({
     discovery,
@@ -99,9 +88,30 @@ export async function createRouter(
       res.json(
         await Promise.all(
           authorizeRequests.map(request =>
-            handleRequest(request, user, permissionHandlers),
+            handleRequest(request, user, permissionHandler),
           ),
         ),
+      );
+    },
+  );
+
+  router.post(
+    '/authorizeFilters',
+    async (
+      req: Request<IdentifiedAuthorizeRequestJSON[]>,
+      res: Response<AuthorizeFiltersResponse>,
+    ) => {
+      const token = IdentityClient.getBearerToken(req.header('authorization'));
+      const user = token ? await identity.authenticate(token) : undefined;
+
+      const [{ permission, ...rest }] = req.body;
+      const authorizeRequest = {
+        ...rest,
+        permission: Permission.fromJSON(permission),
+      };
+
+      res.json(
+        await permissionHandler.authorizeFilters(authorizeRequest, user),
       );
     },
   );
