@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+import { Filter } from '@backstage/backend-common';
 import { createPermissions, CRUDAction } from '@backstage/permission-common';
+import { stringifyEntityRef } from '../entity/ref';
+import { RELATION_OWNED_BY } from '../kinds/relations';
+import { EntityName } from '../types';
 
 export const CatalogPermission = createPermissions({
   ENTITY_READ: {
@@ -30,3 +34,23 @@ export const CatalogPermission = createPermissions({
     },
   },
 });
+
+export function isEntityOwner(owners: EntityName[]): Filter {
+  return {
+    key: RELATION_OWNED_BY,
+    matchValueIn: owners.map(owner =>
+      stringifyEntityRef({
+        kind: owner.kind,
+        namespace: owner.namespace,
+        name: owner.name,
+      }),
+    ),
+  };
+}
+
+export function hasAnnotation(annotation: string): Filter {
+  return {
+    key: annotation,
+    matchValueExists: true,
+  };
+}

@@ -181,6 +181,9 @@ export async function createRouter(
           throw missingError;
         }
 
+        // TODO(authorization-framework): Context should be the full entity in the backend
+        // TODO(authorization-framework): Field filtering should be done just before HTTP return
+        //  instead of within the .entities call, so that post-authorization works
         const authorizeResponse = await permissionApi.authorize(
           [
             {

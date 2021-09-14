@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { PermissionAttributes } from './attributes';
+import { CRUDAction, PermissionAttributes } from './attributes';
 
 export type PermissionJSON = {
   name: string;
@@ -29,6 +29,26 @@ export class Permission {
 
   is(permission: Permission) {
     return this.name === permission.name;
+  }
+
+  get isRouteVisibility() {
+    return !!this.attributes.ROUTE_VISIBILITY;
+  }
+
+  get isCreate() {
+    return this.attributes.CRUD_ACTION === CRUDAction.CREATE;
+  }
+
+  get isRead() {
+    return this.attributes.CRUD_ACTION === CRUDAction.READ;
+  }
+
+  get isUpdate() {
+    return this.attributes.CRUD_ACTION === CRUDAction.UPDATE;
+  }
+
+  get isDelete() {
+    return this.attributes.CRUD_ACTION === CRUDAction.DELETE;
   }
 
   static fromJSON({ name, attributes }: PermissionJSON) {

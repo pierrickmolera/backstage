@@ -16,10 +16,15 @@
 
 import { Permission, PermissionJSON } from './permission';
 
+type PermissionMethods<T extends string> = {
+  get: (key: T) => Permission;
+  includes: (permission: Permission) => boolean;
+};
+
 export const createPermissions = <T extends string>(
   permissions: Record<T, PermissionJSON>,
-): Record<T, Permission> => {
-  return Object.entries<PermissionJSON>(permissions).reduce<
+): Record<T, Permission> & PermissionMethods<T> => {
+  const permissionsByKey = Object.entries<PermissionJSON>(permissions).reduce<
     Record<T, Permission>
   >(
     (acc, [key, permission]) => ({
@@ -28,4 +33,14 @@ export const createPermissions = <T extends string>(
     }),
     {} as Record<T, Permission>,
   );
+
+  return {
+    ...permissionsByKey,
+    get: (key: T) => permissionsByKey[key],
+    includes: (permission: Permission) => {
+      return Object.values<Permission>(permissionsByKey).some(
+        p => p.name === permission.name,
+      );
+    },
+  };
 };

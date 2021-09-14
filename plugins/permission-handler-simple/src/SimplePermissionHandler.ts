@@ -18,13 +18,18 @@ import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import {
   AuthorizeFiltersResponse,
   AuthorizeResult,
-  CRUDAction,
   AuthorizeRequestContext,
   AuthorizeRequest,
   AuthorizeResponse,
 } from '@backstage/permission-common';
 import { PermissionHandler } from '@backstage/plugin-permission-backend';
-import { parseEntityName, stringifyEntityRef } from '@backstage/catalog-model';
+import {
+  CatalogPermission,
+  EntityName,
+  hasAnnotation,
+  isEntityOwner,
+  parseEntityRef,
+} from '@backstage/catalog-model';
 
 export class SimplePermissionHandler implements PermissionHandler {
   async handle(
@@ -37,7 +42,7 @@ export class SimplePermissionHandler implements PermissionHandler {
       };
     }
 
-    if (request.permission.attributes.CRUD_ACTION === CRUDAction.READ) {
+    if (request.permission.isRead) {
       return {
         result: AuthorizeResult.ALLOW,
       };
@@ -49,34 +54,30 @@ export class SimplePermissionHandler implements PermissionHandler {
   }
 
   async authorizeFilters(
-    _request: AuthorizeRequest<AuthorizeRequestContext>,
+    request: AuthorizeRequest<AuthorizeRequestContext>,
     identity?: BackstageIdentity,
   ): Promise<AuthorizeFiltersResponse> {
-    if (identity?.id) {
-      // TODO(authorization-framework): need a nicer pattern here, builder?
+    if (request.permission.isRead) {
       return {
-        result: AuthorizeResult.MAYBE,
-        conditions: {
-          anyOf: [
-            {
-              allOf: [
-                {
-                  key: 'relations.ownedBy',
-                  matchValueIn: [
-                    stringifyEntityRef(
-                      parseEntityName(identity.id, {
-                        defaultKind: 'User',
-                        defaultNamespace: 'default',
-                      }),
-                    ),
-                  ],
-                },
-              ],
-            },
-          ],
-        },
+        result: AuthorizeResult.ALLOW,
       };
     }
+
+    if (CatalogPermission.includes(request.permission)) {
+      return {
+        result: AuthorizeResult.MAYBE,
+        conditions: [
+          isEntityOwner([
+            parseEntityRef(identity?.id ?? '', {
+              defaultKind: 'user',
+              defaultNamespace: 'default',
+            }) as EntityName,
+          ]),
+          hasAnnotation('backstage.io/view-url'),
+        ],
+      };
+    }
+
     return {
       result: AuthorizeResult.DENY,
     };
