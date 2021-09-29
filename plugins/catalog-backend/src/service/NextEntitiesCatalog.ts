@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
+import { Filter, Filters } from '@backstage/backend-common';
 import { Entity, stringifyEntityRef } from '@backstage/catalog-model';
 import { InputError, NotFoundError } from '@backstage/errors';
+import { CatalogPermission } from '@backstage/catalog-model';
+import {
+  AuthorizeResult,
+  PermissionClient,
+} from '@backstage/permission-common';
 import { Knex } from 'knex';
 import {
   EntitiesCatalog,
@@ -67,22 +73,11 @@ function parsePagination(input?: EntityPagination): {
   return { limit, offset };
 }
 
-function stringifyPagination(input: { limit: number; offset: number }) {
-  const json = JSON.stringify({ limit: input.limit, offset: input.offset });
-  const base64 = Buffer.from(json, 'utf8').toString('base64');
-  return base64;
-}
-
-export class NextEntitiesCatalog implements EntitiesCatalog {
-  constructor(private readonly database: Knex) {}
-
-  async entities(request?: EntitiesRequest): Promise<EntitiesResponse> {
-    const db = this.database;
-
-    let entitiesQuery = db<DbFinalEntitiesRow>('final_entities');
-
-    for (const singleFilter of request?.filter?.anyOf ?? []) {
-      entitiesQuery = entitiesQuery.orWhere(function singleFilterFn() {
+function parseFiltersToDbQuery(filters: Filters, db: Knex) {
+  return function parseFilters(queryBuilder: Knex.QueryBuilder) {
+    // let queryBuilderTemp = queryBuilder;
+    for (const singleFilter of filters.anyOf ?? []) {
+      queryBuilder.orWhere(function singleFilterFn() {
         for (const {
           key,
           matchValueIn,
@@ -115,6 +110,50 @@ export class NextEntitiesCatalog implements EntitiesCatalog {
           );
         }
       });
+    }
+  };
+}
+
+function stringifyPagination(input: { limit: number; offset: number }) {
+  const json = JSON.stringify({ limit: input.limit, offset: input.offset });
+  const base64 = Buffer.from(json, 'utf8').toString('base64');
+  return base64;
+}
+
+export class NextEntitiesCatalog implements EntitiesCatalog {
+  constructor(
+    private readonly database: Knex,
+    private readonly permissionApi: PermissionClient,
+  ) {}
+
+  async entities(request?: EntitiesRequest): Promise<EntitiesResponse> {
+    const db = this.database;
+
+    let entitiesQuery = db<DbFinalEntitiesRow>('final_entities');
+
+    const permission = CatalogPermission.ENTITY_READ;
+    const authorizationFilters = await this.permissionApi.authorizeFilters(
+      { permission },
+      { token: request?.authorizationToken },
+    );
+
+    if (authorizationFilters.result === AuthorizeResult.DENY) {
+      return {
+        entities: [],
+        pageInfo: { hasNextPage: false },
+      };
+    }
+
+    if (request?.filter) {
+      entitiesQuery = entitiesQuery.andWhere(
+        parseFiltersToDbQuery(request.filter, db),
+      );
+    if (authorizationFilters.result === AuthorizeResult.MAYBE) {
+    }
+
+      entitiesQuery = entitiesQuery.andWhere(
+        parseFiltersToDbQuery(authorizationFilters.conditions, db),
+      );
     }
 
     // TODO: move final_entities to use entity_ref

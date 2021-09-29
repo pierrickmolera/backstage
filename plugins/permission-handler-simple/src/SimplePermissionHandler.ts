@@ -64,17 +64,29 @@ export class SimplePermissionHandler implements PermissionHandler {
     }
 
     if (CatalogPermission.includes(request.permission)) {
+      if (!identity) {
+        return {
+          result: AuthorizeResult.DENY,
+        };
+      }
+
       return {
         result: AuthorizeResult.MAYBE,
-        conditions: [
-          isEntityOwner([
-            parseEntityRef(identity?.id ?? '', {
-              defaultKind: 'user',
-              defaultNamespace: 'default',
-            }) as EntityName,
-          ]),
-          hasAnnotation('backstage.io/view-url'),
-        ],
+        conditions: {
+          anyOf: [
+            {
+              allOf: [
+                isEntityOwner([
+                  parseEntityRef(identity?.id ?? '', {
+                    defaultKind: 'user',
+                    defaultNamespace: 'default',
+                  }) as EntityName,
+                ]),
+                hasAnnotation('backstage.io/view-url'),
+              ],
+            },
+          ],
+        },
       };
     }
 

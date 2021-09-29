@@ -35,6 +35,7 @@ import {
   useHotMemoize,
 } from '@backstage/backend-common';
 import { Config } from '@backstage/config';
+import { PermissionClient } from '@backstage/permission-common';
 import healthcheck from './plugins/healthcheck';
 import { metricsInit, metricsHandler } from './metrics';
 import auth from './plugins/auth';
@@ -60,6 +61,7 @@ function makeCreateEnv(config: Config) {
   const root = getRootLogger();
   const reader = UrlReaders.default({ logger: root, config });
   const discovery = SingleHostDiscovery.fromConfig(config);
+  const permissions = new PermissionClient({ discoveryApi: discovery });
 
   root.info(`Created UrlReader ${reader}`);
 
@@ -70,7 +72,7 @@ function makeCreateEnv(config: Config) {
     const logger = root.child({ type: 'plugin', plugin });
     const database = databaseManager.forPlugin(plugin);
     const cache = cacheManager.forPlugin(plugin);
-    return { logger, cache, database, config, reader, discovery };
+    return { logger, cache, database, config, reader, discovery, permissions };
   };
 }
 

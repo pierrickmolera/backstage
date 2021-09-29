@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Filter } from '@backstage/backend-common';
+import { Filters } from '@backstage/backend-common';
 import { Permission, PermissionJSON } from './permissions';
 
 export enum AuthorizeResult {
@@ -43,7 +43,7 @@ export type AuthorizeFiltersResponse =
   | AuthorizeResponse
   | {
       result: AuthorizeResult.MAYBE;
-      conditions: Filter[];
+      conditions: Filters;
     };
 
 export type IdentifiedAuthorizeResponse = AuthorizeResponse & {
