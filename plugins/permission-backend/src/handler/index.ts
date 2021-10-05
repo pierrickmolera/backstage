@@ -14,5 +14,10 @@
  * limitations under the License.
  */
 
-export type { PermissionHandler } from './types';
+export type {
+  DefinitiveHandlerResult,
+  ConditionalHandlerResult,
+  HandlerResult,
+  PermissionHandler,
+} from './types';
 export { AllowAllPermissionHandler } from './AllowAllPermissionHandler';

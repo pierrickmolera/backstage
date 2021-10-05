@@ -14,11 +14,29 @@
  * limitations under the License.
  */
 
-import { Filter } from '@backstage/backend-common';
-import { createPermissions, CRUDAction } from '@backstage/permission-common';
-import { stringifyEntityRef } from '../entity/ref';
+import type { PluginEndpointDiscovery } from '@backstage/backend-common';
+import { CatalogClient } from '@backstage/catalog-client';
+import { BackstageIdentity } from '@backstage/plugin-auth-backend';
+import {
+  Filters,
+  FilterFactory,
+  FilterFactoryResult,
+  FilterDefinition,
+  createPermissions,
+  CRUDAction,
+} from '@backstage/permission-common';
+import { Entity, EntityRelation } from '../entity';
+import { parseEntityRef, stringifyEntityRef } from '../entity/ref';
 import { RELATION_OWNED_BY } from '../kinds/relations';
 import { EntityName } from '../types';
+
+export type EntityFilter = {
+  key: string;
+  matchValueIn?: string[];
+  matchValueExists?: boolean;
+};
+
+export const RESOURCE_TYPE_CATALOG_ENTITY = 'catalog-entity';
 
 export const CatalogPermission = createPermissions({
   ENTITY_READ: {
@@ -35,29 +53,102 @@ export const CatalogPermission = createPermissions({
   },
 });
 
-export function isEntityOwner(owners: EntityName[]): Filter {
-  return {
-    key: RELATION_OWNED_BY,
-    matchValueIn: owners.map(owner =>
-      stringifyEntityRef({
-        kind: owner.kind,
-        namespace: owner.namespace,
-        name: owner.name,
-      }),
-    ),
-  };
-}
+export const isEntityKind: FilterFactory<[string[]], Entity, EntityFilter> = (
+  kinds: string[],
+) => {
+  const normalizedKinds = kinds.map(kind => kind.toLocaleLowerCase('en-US'));
 
-export function isEntityKind(kinds: string[]): Filter {
   return {
-    key: 'kind',
-    matchValueIn: kinds.map(kind => kind.toLocaleLowerCase('en-US')),
-  };
-}
+    apply: (resource: Entity) =>
+      normalizedKinds.some(
+        kind => kind === resource.kind.toLocaleLowerCase('en-US'),
+      ),
 
-export function hasAnnotation(annotation: string): Filter {
-  return {
+    serialize: () => ({
+      key: 'kind',
+      matchValueIn: normalizedKinds,
+    }),
+  };
+};
+
+export const hasAnnotation: FilterFactory<[string], Entity, EntityFilter> = (
+  annotation: string,
+) => ({
+  apply: (resource: Entity) =>
+    !!resource.metadata.annotations?.hasOwnProperty(annotation),
+
+  serialize: () => ({
     key: annotation,
     matchValueExists: true,
+  }),
+});
+
+export const isEntityOwner: FilterFactory<
+  [BackstageIdentity],
+  Entity,
+  EntityFilter
+> = (identity: BackstageIdentity) => {
+  // TODO(authorization-framework) eventually all the claims
+  // should be pulled off the token and used to evaluate
+  // transitive ownership (I own anything owned by my user
+  // or any of the groups I'm in).
+
+  return {
+    apply: (resource: Entity): boolean => {
+      if (!resource.relations) {
+        return false;
+      }
+
+      return resource.relations
+        .filter(
+          (relation: EntityRelation) => relation.type === RELATION_OWNED_BY,
+        )
+        .some(
+          relation =>
+            stringifyEntityRef(relation.target) ===
+            stringifyEntityRef(
+              parseEntityRef(identity?.id ?? '', {
+                defaultKind: 'user',
+                defaultNamespace: 'default',
+              }) as EntityName,
+            ),
+        );
+    },
+
+    serialize: () => ({
+      key: RELATION_OWNED_BY,
+      matchValueIn: [
+        stringifyEntityRef({
+          kind: 'user',
+          namespace: 'default',
+          name: identity.id,
+        }),
+      ],
+    }),
   };
+};
+
+export class CatalogEntityFilterDefinition
+  implements FilterDefinition<Entity, EntityFilter>
+{
+  get resourceType() {
+    return RESOURCE_TYPE_CATALOG_ENTITY;
+  }
+
+  constructor(
+    public filters: Filters<FilterFactoryResult<Entity, EntityFilter>>,
+  ) {}
+
+  getResource(
+    resourceRef: string,
+    {
+      discoveryApi,
+    }: {
+      discoveryApi: PluginEndpointDiscovery;
+    },
+  ) {
+    const catalog = new CatalogClient({ discoveryApi });
+
+    return catalog.getEntityByName(parseEntityRef(resourceRef));
+  }
 }

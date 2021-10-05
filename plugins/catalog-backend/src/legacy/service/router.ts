@@ -184,23 +184,23 @@ export async function createRouter(
         // TODO(authorization-framework): Context should be the full entity in the backend
         // TODO(authorization-framework): Field filtering should be done just before HTTP return
         //  instead of within the .entities call, so that post-authorization works
-        const authorizeResponse = await permissionApi.authorize(
-          [
-            {
-              permission: CatalogPermission.ENTITY_READ,
-              context: {
-                entityName: getEntityName(entities[0]),
-              },
-            },
-          ],
-          { token: IdentityClient.getBearerToken(req.header('authorization')) },
-        );
+        // const authorizeResponse = await permissionApi.authorize(
+        //   [
+        //     {
+        //       permission: CatalogPermission.ENTITY_READ,
+        //       context: {
+        //         entityName: getEntityName(entities[0]),
+        //       },
+        //     },
+        //   ],
+        //   { token: IdentityClient.getBearerToken(req.header('authorization')) },
+        // );
 
-        // TODO(orkohunter): why does this enum work? It's a frontend package. move to common package.
-        if (authorizeResponse[0].result !== AuthorizeResult.ALLOW) {
-          // TBD: Should this be 403 instead?
-          throw missingError;
-        }
+        // // TODO(orkohunter): why does this enum work? It's a frontend package. move to common package.
+        // if (authorizeResponse[0].result !== AuthorizeResult.ALLOW) {
+        //   // TBD: Should this be 403 instead?
+        //   throw missingError;
+        // }
 
         res.status(200).json(entities[0]);
       });

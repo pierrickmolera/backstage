@@ -116,13 +116,16 @@ export async function createNextRouter(
       })
       .get('/entities/by-name/:kind/:namespace/:name', async (req, res) => {
         const { kind, namespace, name } = req.params;
-        const { entities } = await entitiesCatalog.entities({
-          filter: basicEntityFilter({
-            kind: kind,
-            'metadata.namespace': namespace,
-            'metadata.name': name,
-          }),
-        });
+        const { entities } = await entitiesCatalog.entities(
+          {
+            filter: basicEntityFilter({
+              kind: kind,
+              'metadata.namespace': namespace,
+              'metadata.name': name,
+            }),
+          },
+          false,
+        );
         if (!entities.length) {
           throw new NotFoundError(
             `No entity named '${name}' found, with kind '${kind}' in namespace '${namespace}'`,

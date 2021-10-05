@@ -16,78 +16,47 @@
 
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import {
-  AuthorizeFiltersResponse,
   AuthorizeResult,
-  AuthorizeRequestContext,
   AuthorizeRequest,
-  AuthorizeResponse,
   TechDocsPermission,
 } from '@backstage/permission-common';
-import { PermissionHandler } from '@backstage/plugin-permission-backend';
 import {
-  CatalogPermission,
-  EntityName,
-  hasAnnotation,
+  HandlerResult,
+  PermissionHandler,
+} from '@backstage/plugin-permission-backend';
+import {
+  CatalogEntityFilterDefinition,
   isEntityOwner,
+  hasAnnotation,
   isEntityKind,
-  parseEntityRef,
+  RESOURCE_TYPE_CATALOG_ENTITY,
 } from '@backstage/catalog-model';
 
 export class SimplePermissionHandler implements PermissionHandler {
   async handle(
-    request: AuthorizeRequest<AuthorizeRequestContext>,
+    request: AuthorizeRequest,
     identity?: BackstageIdentity,
-  ): Promise<AuthorizeResponse> {
+  ): Promise<HandlerResult> {
     if (TechDocsPermission.includes(request.permission)) {
       return {
         result: AuthorizeResult.DENY,
       };
     }
 
-    if (identity) {
-      return {
-        result: AuthorizeResult.ALLOW,
-      };
-    }
-
-    if (request.permission.isRead) {
-      return {
-        result: AuthorizeResult.ALLOW,
-      };
-    }
-
-    return {
-      result: AuthorizeResult.DENY,
-    };
-  }
-
-  async authorizeFilters(
-    request: AuthorizeRequest<AuthorizeRequestContext>,
-    identity?: BackstageIdentity,
-  ): Promise<AuthorizeFiltersResponse> {
-    if (CatalogPermission.includes(request.permission)) {
+    if (request.resource?.type === RESOURCE_TYPE_CATALOG_ENTITY) {
       if (!identity) {
         return {
           result: AuthorizeResult.DENY,
-        };
+        } as any;
       }
 
       return {
         result: AuthorizeResult.MAYBE,
-        conditions: {
+        conditions: new CatalogEntityFilterDefinition({
           anyOf: [
             {
               allOf: [
-                // TODO(authorization-framework) eventually all the claims
-                // should be pulled off the token and used to evaluate
-                // transitive ownership (I own anything owned by my user
-                // or any of the groups I'm in).
-                isEntityOwner([
-                  parseEntityRef(identity?.id ?? '', {
-                    defaultKind: 'user',
-                    defaultNamespace: 'default',
-                  }) as EntityName,
-                ]),
+                isEntityOwner(identity),
                 hasAnnotation('backstage.io/view-url'),
               ],
             },
@@ -97,12 +66,18 @@ export class SimplePermissionHandler implements PermissionHandler {
             // TODO(authorization-framework) we probably need the ability
             // to do negative matching (i.e. exclude all entities of type X)
           ],
-        },
+        }),
       };
+    }
+
+    if (identity) {
+      return {
+        result: AuthorizeResult.ALLOW,
+      } as any;
     }
 
     return {
       result: AuthorizeResult.DENY,
-    };
+    } as any;
   }
 }

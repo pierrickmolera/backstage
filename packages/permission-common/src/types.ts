@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import { Filters } from '@backstage/backend-common';
+import { JsonValue } from '@backstage/config';
 import { Permission, PermissionJSON } from './permissions';
+
+export type Identified<T> = T & { id: string };
 
 export enum AuthorizeResult {
   DENY = 'DENY',
@@ -23,37 +25,29 @@ export enum AuthorizeResult {
   MAYBE = 'MAYBE',
 }
 
-export type AuthorizeRequestContext = Record<string, any>;
-
-export type AuthorizeRequest<T extends AuthorizeRequestContext> = {
+export type AuthorizeRequest = {
   permission: Permission;
-  context?: T;
-};
-
-export type IdentifiedAuthorizeRequest<T extends AuthorizeRequestContext> =
-  AuthorizeRequest<T> & {
-    id: string;
+  resource?: {
+    identifier?: string;
+    type: string;
   };
-
-export type AuthorizeResponse = {
-  result: AuthorizeResult.ALLOW | AuthorizeResult.DENY;
 };
 
-export type AuthorizeFiltersResponse =
-  | AuthorizeResponse
+export type AuthorizeRequestJSON = AuthorizeRequest & {
+  permission: PermissionJSON;
+};
+
+export type Filters<TFilter> = {
+  anyOf: {
+    allOf: TFilter[];
+  }[];
+};
+
+export type AuthorizeResponse<TFilter extends JsonValue = JsonValue> =
+  | {
+      result: AuthorizeResult.ALLOW | AuthorizeResult.DENY;
+    }
   | {
       result: AuthorizeResult.MAYBE;
-      conditions: Filters;
+      conditions: Filters<TFilter>;
     };
-
-export type IdentifiedAuthorizeResponse = AuthorizeResponse & {
-  id: string;
-};
-
-export type IdentifiedAuthorizeRequestJSON<
-  T extends AuthorizeRequestContext = AuthorizeRequestContext,
-> = {
-  id: string;
-  permission: PermissionJSON;
-  context: T;
-};

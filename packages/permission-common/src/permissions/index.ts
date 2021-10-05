@@ -20,4 +20,9 @@ export type { PermissionAttributes } from './attributes';
 export { Permission } from './permission';
 export { CRUDAction } from './attributes';
 export { createPermissions } from './util';
+export type {
+  FilterDefinition,
+  FilterFactory,
+  FilterFactoryResult,
+} from './util';
 export * from './techdocs';

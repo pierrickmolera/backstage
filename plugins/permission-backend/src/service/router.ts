@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { errorHandler, SingleHostDiscovery } from '@backstage/backend-common';
+import {
+  errorHandler,
+  SingleHostDiscovery,
+  PluginEndpointDiscovery,
+} from '@backstage/backend-common';
 import express, { Request, Response } from 'express';
 import Router from 'express-promise-router';
 import { Logger } from 'winston';
@@ -24,14 +28,15 @@ import {
 } from '@backstage/plugin-auth-backend';
 import { Config } from '@backstage/config';
 import {
-  IdentifiedAuthorizeRequest,
-  IdentifiedAuthorizeRequestJSON,
-  IdentifiedAuthorizeResponse,
   Permission,
-  AuthorizeRequestContext,
-  AuthorizeFiltersResponse,
+  AuthorizeResult,
+  AuthorizeResponse,
+  AuthorizeRequest,
+  FilterDefinition,
+  AuthorizeRequestJSON,
+  Identified,
 } from '@backstage/permission-common';
-import { PermissionHandler } from '../handler';
+import { ConditionalHandlerResult, PermissionHandler } from '../handler';
 
 export interface RouterOptions {
   logger: Logger;
@@ -39,16 +44,63 @@ export interface RouterOptions {
   permissionHandler: PermissionHandler;
 }
 
+const applyFilters = async (
+  resourceRef: string,
+  conditions: FilterDefinition,
+  discoveryApi: PluginEndpointDiscovery,
+): Promise<AuthorizeResponse> => {
+  const resource = await conditions.getResource(resourceRef, { discoveryApi });
+
+  return {
+    result: conditions.filters.anyOf.some(anyOf =>
+      anyOf.allOf.every(filter => filter.apply(resource)),
+    )
+      ? AuthorizeResult.ALLOW
+      : AuthorizeResult.DENY,
+  };
+};
+
+const serializeFilters = ({
+  result,
+  conditions,
+}: ConditionalHandlerResult): AuthorizeResponse => ({
+  result,
+  conditions: {
+    anyOf: conditions.filters.anyOf.map(({ allOf }) => ({
+      allOf: allOf.map(x => x.serialize()),
+    })),
+  },
+});
+
+//
 const handleRequest = async (
-  { id, ...request }: IdentifiedAuthorizeRequest<AuthorizeRequestContext>,
+  { id, ...request }: Identified<AuthorizeRequest>,
   user: BackstageIdentity | undefined,
   permissionHandler: PermissionHandler,
-): Promise<IdentifiedAuthorizeResponse> => {
+  discovery: PluginEndpointDiscovery,
+): Promise<Identified<AuthorizeResponse>> => {
+  // TODO(authorization-framework - omit resource ref to clarify intent)
   const response = await permissionHandler.handle(request, user);
-  return {
-    ...response,
-    id,
-  };
+
+  if (response.result === AuthorizeResult.MAYBE) {
+    if (request.resource?.identifier) {
+      return {
+        id,
+        ...(await applyFilters(
+          request.resource.identifier,
+          response.conditions,
+          discovery,
+        )),
+      };
+    }
+
+    return {
+      id,
+      ...serializeFilters(response),
+    };
+  }
+
+  return { id, ...response };
 };
 
 export async function createRouter(
@@ -67,8 +119,8 @@ export async function createRouter(
   router.post(
     '/authorize',
     async (
-      req: Request<IdentifiedAuthorizeRequestJSON[]>,
-      res: Response<IdentifiedAuthorizeResponse[]>,
+      req: Request<Identified<AuthorizeRequestJSON>[]>,
+      res: Response<Identified<AuthorizeResponse>[]>,
     ) => {
       // TODO(mtlewis/orkohunter): Payload too large errors happen when internal backends (techdocs, search, etc.) try
       // to fetch all of entities.
@@ -78,7 +130,7 @@ export async function createRouter(
       const token = IdentityClient.getBearerToken(req.header('authorization'));
       const user = token ? await identity.authenticate(token) : undefined;
 
-      const body: IdentifiedAuthorizeRequestJSON[] = req.body;
+      const body: Identified<AuthorizeRequestJSON>[] = req.body;
       const authorizeRequests = body.map(({ permission, ...rest }) => ({
         ...rest,
         permission: Permission.fromJSON(permission),
@@ -88,30 +140,9 @@ export async function createRouter(
       res.json(
         await Promise.all(
           authorizeRequests.map(request =>
-            handleRequest(request, user, permissionHandler),
+            handleRequest(request, user, permissionHandler, discovery),
           ),
         ),
-      );
-    },
-  );
-
-  router.post(
-    '/authorizeFilters',
-    async (
-      req: Request<IdentifiedAuthorizeRequestJSON[]>,
-      res: Response<AuthorizeFiltersResponse>,
-    ) => {
-      const token = IdentityClient.getBearerToken(req.header('authorization'));
-      const user = token ? await identity.authenticate(token) : undefined;
-
-      const [{ permission, ...rest }] = req.body;
-      const authorizeRequest = {
-        ...rest,
-        permission: Permission.fromJSON(permission),
-      };
-
-      res.json(
-        await permissionHandler.authorizeFilters(authorizeRequest, user),
       );
     },
   );

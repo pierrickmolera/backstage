@@ -126,16 +126,23 @@ export class NextEntitiesCatalog implements EntitiesCatalog {
     private readonly permissionApi: PermissionClient,
   ) {}
 
-  async entities(request?: EntitiesRequest): Promise<EntitiesResponse> {
+  async entities(
+    request?: EntitiesRequest,
+    // TODO(authorization-framework - this should be based on whether the request originates from a backend.
+    authorize: boolean = true,
+  ): Promise<EntitiesResponse> {
     const db = this.database;
 
     let entitiesQuery = db<DbFinalEntitiesRow>('final_entities');
 
     const permission = CatalogPermission.ENTITY_READ;
-    const authorizationFilters = await this.permissionApi.authorizeFilters(
-      { permission },
-      { token: request?.authorizationToken },
-    );
+    const authorizationFilters = authorize
+      ? (
+          await this.permissionApi.authorize([{ permission }], {
+            token: request?.authorizationToken,
+          })
+        )[0]
+      : { result: AuthorizeResult.ALLOW };
 
     if (authorizationFilters.result === AuthorizeResult.DENY) {
       return {

@@ -17,22 +17,15 @@
 import {
   AuthorizeRequest,
   AuthorizeResponse,
-  AuthorizeRequestContext,
-  AuthorizeFiltersResponse,
 } from '@backstage/permission-common';
 import { ApiRef, createApiRef } from '../system';
 
-export type PermissionApi<T> = {
+export type PermissionApi = {
   authorize(
-    requests: Array<AuthorizeRequest<T>>,
+    requests: Array<AuthorizeRequest>,
   ): Promise<Array<AuthorizeResponse>>;
-
-  authorizeFilters(
-    request: AuthorizeRequest<T>,
-  ): Promise<AuthorizeFiltersResponse>;
 };
 
-export const permissionApiRef: ApiRef<PermissionApi<AuthorizeRequestContext>> =
-  createApiRef({
-    id: 'plugin.permission',
-  });
+export const permissionApiRef: ApiRef<PermissionApi> = createApiRef({
+  id: 'plugin.permission',
+});

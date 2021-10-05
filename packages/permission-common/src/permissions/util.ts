@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+import { PluginEndpointDiscovery } from '@backstage/backend-common';
 import { Permission, PermissionJSON } from './permission';
+import { Filters } from '../types';
 
 type PermissionMethods<T extends string> = {
   get: (key: T) => Permission;
@@ -44,3 +46,22 @@ export const createPermissions = <T extends string>(
     },
   };
 };
+
+export type FilterFactoryResult<TResource, TFilter> = {
+  apply: (resource: TResource) => boolean;
+  serialize: () => TFilter;
+};
+
+export type FilterFactory<TParams extends any[], TResource, TFilter> = (
+  ...params: TParams
+) => FilterFactoryResult<TResource, TFilter>;
+
+export interface FilterDefinition<TResource = any, TFilter = any> {
+  resourceType: string;
+  filters: Filters<FilterFactoryResult<TResource, TFilter>>;
+
+  getResource(
+    resourceRef: string,
+    environment: { discoveryApi: PluginEndpointDiscovery },
+  ): Promise<TResource | undefined>;
+}

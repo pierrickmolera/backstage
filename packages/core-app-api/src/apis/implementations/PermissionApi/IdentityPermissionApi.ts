@@ -20,34 +20,25 @@ import {
   PermissionApi,
 } from '@backstage/core-plugin-api';
 import {
-  AuthorizeFiltersResponse,
   AuthorizeRequest,
   AuthorizeResponse,
   PermissionClient,
 } from '@backstage/permission-common';
 
-export class IdentityPermissionApi<T> implements PermissionApi<T> {
+export class IdentityPermissionApi implements PermissionApi {
   private readonly permissionClient: PermissionClient;
 
   constructor(
     discoveryApi: DiscoveryApi,
     private readonly identityApi: IdentityApi,
   ) {
-    this.permissionClient = new PermissionClient<T>({ discoveryApi });
+    this.permissionClient = new PermissionClient({ discoveryApi });
   }
 
   async authorize(
-    requests: Array<AuthorizeRequest<T>>,
+    requests: Array<AuthorizeRequest>,
   ): Promise<Array<AuthorizeResponse>> {
     return await this.permissionClient.authorize(requests, {
-      token: await this.identityApi.getIdToken(),
-    });
-  }
-
-  async authorizeFilters(
-    request: AuthorizeRequest<T>,
-  ): Promise<AuthorizeFiltersResponse> {
-    return await this.permissionClient.authorizeFilters(request, {
       token: await this.identityApi.getIdToken(),
     });
   }

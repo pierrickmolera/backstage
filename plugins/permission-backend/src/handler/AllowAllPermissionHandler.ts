@@ -14,29 +14,17 @@
  * limitations under the License.
  */
 import {
-  AuthorizeRequestContext,
   AuthorizeResult,
   AuthorizeRequest,
-  AuthorizeResponse,
-  AuthorizeFiltersResponse,
 } from '@backstage/permission-common';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
-import { PermissionHandler } from './types';
+import { HandlerResult, PermissionHandler } from './types';
 
 export class AllowAllPermissionHandler implements PermissionHandler {
   async handle(
-    _request: AuthorizeRequest<AuthorizeRequestContext>,
+    _request: AuthorizeRequest,
     _user?: BackstageIdentity,
-  ): Promise<AuthorizeResponse> {
-    return {
-      result: AuthorizeResult.ALLOW,
-    };
-  }
-
-  async authorizeFilters(
-    _request: AuthorizeRequest<AuthorizeRequestContext>,
-    _user?: BackstageIdentity,
-  ): Promise<AuthorizeFiltersResponse> {
+  ): Promise<HandlerResult> {
     return {
       result: AuthorizeResult.ALLOW,
     };

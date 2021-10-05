@@ -23,22 +23,17 @@ import * as uuid from 'uuid';
 // about organization of permission packages and dependencies.
 import type { DiscoveryApi } from '@backstage/core-plugin-api';
 import {
-  AuthorizeFiltersResponse,
   AuthorizeResult,
   AuthorizeRequest,
-  AuthorizeRequestContext,
   AuthorizeResponse,
-  IdentifiedAuthorizeRequest,
-  IdentifiedAuthorizeResponse,
+  Identified,
 } from './types';
 
 export type PermissionRequestOptions = {
   token?: string;
 };
 
-export class PermissionClient<
-  T extends AuthorizeRequestContext = AuthorizeRequestContext,
-> {
+export class PermissionClient {
   private readonly discoveryApi: DiscoveryApi;
 
   constructor(options: { discoveryApi: DiscoveryApi }) {
@@ -46,18 +41,11 @@ export class PermissionClient<
   }
 
   async authorize(
-    requests: AuthorizeRequest<T>[],
+    requests: AuthorizeRequest[],
     options?: PermissionRequestOptions,
   ): Promise<AuthorizeResponse[]> {
     // TODO(timbonicus/joeporpeglia): we should batch requests here for some ms, and potentially de-duplicate?
     return this._authorize('/authorize', requests, options);
-  }
-
-  async authorizeFilters(
-    request: AuthorizeRequest<T>,
-    options?: PermissionRequestOptions,
-  ): Promise<AuthorizeFiltersResponse> {
-    return this._authorizeFilters('/authorizeFilters', request, options);
   }
 
   //
@@ -66,10 +54,10 @@ export class PermissionClient<
 
   private async _authorize(
     path: string,
-    requests: AuthorizeRequest<T>[],
+    requests: AuthorizeRequest[],
     options?: PermissionRequestOptions,
   ): Promise<AuthorizeResponse[]> {
-    const identifiedRequests: IdentifiedAuthorizeRequest<T>[] = requests.map(
+    const identifiedRequests: Identified<AuthorizeRequest>[] = requests.map(
       request => ({
         id: uuid.v4(),
         ...request,
@@ -86,36 +74,28 @@ export class PermissionClient<
     const responsesById = identifiedResponses.reduce((acc, r) => {
       acc[r.id] = r;
       return acc;
-    }, {} as Record<string, IdentifiedAuthorizeResponse>);
+    }, {} as Record<string, Identified<AuthorizeResponse>>);
 
     return identifiedRequests.map(request => responsesById[request.id]);
   }
 
   private assertValidResponses(
-    requests: IdentifiedAuthorizeRequest<T>[],
+    requests: Identified<AuthorizeRequest>[],
     json: any,
-  ): asserts json is IdentifiedAuthorizeResponse[] {
+  ): asserts json is Identified<AuthorizeResponse>[] {
     const responses = Array.isArray(json) ? json : [];
-    const authorizedResponses: IdentifiedAuthorizeResponse[] = responses.filter(
-      (r: any): r is IdentifiedAuthorizeResponse =>
-        typeof r === 'object' &&
-        typeof r.id === 'string' &&
-        r.result in AuthorizeResult,
-    );
+    const authorizedResponses: Identified<AuthorizeResponse>[] =
+      responses.filter(
+        (r: any): r is Identified<AuthorizeResponse> =>
+          typeof r === 'object' &&
+          typeof r.id === 'string' &&
+          r.result in AuthorizeResult,
+      );
     const responseIds = authorizedResponses.map(r => r.id);
     const hasAllRequestIds = requests.every(r => responseIds.includes(r.id));
     if (!hasAllRequestIds) {
       throw new Error('Unexpected response from permission-backend');
     }
-  }
-
-  private async _authorizeFilters(
-    path: string,
-    request: AuthorizeRequest<T>,
-    options?: PermissionRequestOptions,
-  ): Promise<AuthorizeFiltersResponse> {
-    const response = await this.post(path, [request], options);
-    return response as AuthorizeFiltersResponse;
   }
 
   private authHeaders(
@@ -130,7 +110,7 @@ export class PermissionClient<
 
   private async post(
     path: string,
-    requests: AuthorizeRequest<T>[],
+    requests: AuthorizeRequest[],
     options?: PermissionRequestOptions,
   ): Promise<any> {
     const response = await fetch(await this.urlFor(path), {
