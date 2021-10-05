@@ -21,6 +21,7 @@ import {
   AuthorizeRequestContext,
   AuthorizeRequest,
   AuthorizeResponse,
+  TechDocsPermission,
 } from '@backstage/permission-common';
 import { PermissionHandler } from '@backstage/plugin-permission-backend';
 import {
@@ -37,6 +38,12 @@ export class SimplePermissionHandler implements PermissionHandler {
     request: AuthorizeRequest<AuthorizeRequestContext>,
     identity?: BackstageIdentity,
   ): Promise<AuthorizeResponse> {
+    if (TechDocsPermission.includes(request.permission)) {
+      return {
+        result: AuthorizeResult.DENY,
+      };
+    }
+
     if (identity) {
       return {
         result: AuthorizeResult.ALLOW,
