@@ -15,16 +15,19 @@
  */
 
 import { useEntity } from '@backstage/plugin-catalog-react';
-import { getEntityName } from '@backstage/catalog-model';
+import {
+  RESOURCE_TYPE_CATALOG_ENTITY,
+  stringifyEntityRef,
+} from '@backstage/catalog-model';
 import { Permission } from '@backstage/permission-common';
 import { usePermission } from '@backstage/plugin-permission';
-import { EntityContext } from '../types';
 
 export const useEntityPermission = (permission: Permission) => {
   // TODO(mtlewis/orkohunter): what happens if there's no entity?
   const { entity } = useEntity();
 
-  return usePermission<EntityContext>(permission, {
-    entityName: getEntityName(entity),
+  return usePermission(permission, {
+    id: stringifyEntityRef(entity),
+    type: RESOURCE_TYPE_CATALOG_ENTITY,
   });
 };

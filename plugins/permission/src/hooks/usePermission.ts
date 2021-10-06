@@ -17,8 +17,8 @@
 import { useAsync } from 'react-use';
 import { permissionApiRef, useApi } from '@backstage/core-plugin-api';
 import {
+  AuthorizeResource,
   AuthorizeResult,
-  AuthorizeRequestContext,
   Permission,
 } from '@backstage/permission-common';
 
@@ -48,11 +48,9 @@ export class AsyncPermissionResult {
   }
 }
 
-export const usePermission = <
-  T extends AuthorizeRequestContext = AuthorizeRequestContext,
->(
+export const usePermission = (
   permission: Permission,
-  context: T,
+  resource?: AuthorizeResource,
 ): AsyncPermissionResult => {
   const permissionApi = useApi(permissionApiRef);
 
@@ -60,7 +58,7 @@ export const usePermission = <
     const [{ result }] = await permissionApi.authorize([
       {
         permission,
-        context,
+        resource,
       },
     ]);
 

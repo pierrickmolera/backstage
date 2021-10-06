@@ -24,7 +24,7 @@ export const PermissionedRoute = ({
   permission,
   ...props
 }: ComponentProps<typeof Route> & { permission: Permission }) => {
-  const permissionResult = usePermission(permission, {});
+  const permissionResult = usePermission(permission);
   const app = useApp();
   const { NotFoundErrorPage } = app.getComponents();
 

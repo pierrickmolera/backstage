@@ -18,7 +18,7 @@ import { RestContext, rest, ResponseComposition } from 'msw';
 import { setupServer } from 'msw/node';
 import { PermissionClient } from './PermissionClient';
 import { DiscoveryApi } from '@backstage/core-plugin-api';
-import { AuthorizeResult, IdentifiedAuthorizeResponse } from './types';
+import { AuthorizeResult, AuthorizeResponse, Identified } from './types';
 import { createPermissions } from './permissions';
 
 const server = setupServer();
@@ -52,15 +52,16 @@ describe('PermissionClient', () => {
     const mockAuthorizeHandler = jest.fn(
       (
         _req,
-        res: ResponseComposition<Array<IdentifiedAuthorizeResponse>>,
+        res: ResponseComposition<Array<Identified<AuthorizeResponse>>>,
         { json }: RestContext,
       ) => {
-        const responseBody: IdentifiedAuthorizeResponse = {
+        const responseBody: Identified<AuthorizeResponse> = {
           id: _req.body[0].id,
           result: AuthorizeResult.ALLOW,
         };
 
-        return res(json([responseBody]));
+        // TODO(authorize-framework): is the typing wrong here?
+        return res(json([responseBody as any]));
       },
     );
 
@@ -76,7 +77,7 @@ describe('PermissionClient', () => {
       await client.authorize([
         {
           permission: mockPermissions.TEST,
-          context: { foo: 'bar' },
+          resource: { id: 'bar', type: 'foo' },
         },
       ]);
 
@@ -87,7 +88,7 @@ describe('PermissionClient', () => {
       await client.authorize([
         {
           permission: mockPermissions.TEST,
-          context: { foo: 'bar' },
+          resource: { id: 'bar', type: 'foo' },
         },
       ]);
 
@@ -96,7 +97,7 @@ describe('PermissionClient', () => {
       expect(request.body[0]).toEqual(
         expect.objectContaining({
           permission: mockPermissions.TEST,
-          context: { foo: 'bar' },
+          resource: { id: 'bar', type: 'foo' },
         }),
       );
     });
@@ -105,7 +106,7 @@ describe('PermissionClient', () => {
       const response = await client.authorize([
         {
           permission: mockPermissions.TEST,
-          context: { foo: 'bar' },
+          resource: { id: 'bar', type: 'foo' },
         },
       ]);
 
@@ -118,7 +119,7 @@ describe('PermissionClient', () => {
       await client.authorize([
         {
           permission: mockPermissions.TEST,
-          context: { foo: 'bar' },
+          resource: { id: 'bar', type: 'foo' },
         },
       ]);
 
@@ -132,7 +133,7 @@ describe('PermissionClient', () => {
         [
           {
             permission: mockPermissions.TEST,
-            context: { foo: 'bar' },
+            resource: { id: 'bar', type: 'foo' },
           },
         ],
         { token },
@@ -148,7 +149,7 @@ describe('PermissionClient', () => {
         mockAuthorizeHandler.mockImplementationOnce(
           (
             _req,
-            res: ResponseComposition<IdentifiedAuthorizeResponse[]>,
+            res: ResponseComposition<Identified<AuthorizeResponse>[]>,
             { status }: RestContext,
           ) => {
             return res(status(401));
@@ -162,7 +163,7 @@ describe('PermissionClient', () => {
             [
               {
                 permission: mockPermissions.TEST,
-                context: { foo: 'bar' },
+                resource: { id: 'bar', type: 'foo' },
               },
             ],
             { token },

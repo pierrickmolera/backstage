@@ -50,11 +50,15 @@ export type Filters<TFilter> = {
   }[];
 };
 
+export type DefinitiveAuthorizeResult = {
+  result: AuthorizeResult.ALLOW | AuthorizeResult.DENY;
+};
+
+export type ConditionalAuthorizeResult<T> = {
+  result: AuthorizeResult.MAYBE;
+  conditions: Filters<T>;
+};
+
 export type AuthorizeResponse<TFilter extends JsonValue = JsonValue> =
-  | {
-      result: AuthorizeResult.ALLOW | AuthorizeResult.DENY;
-    }
-  | {
-      result: AuthorizeResult.MAYBE;
-      conditions: Filters<TFilter>;
-    };
+  | DefinitiveAuthorizeResult
+  | ConditionalAuthorizeResult<TFilter>;

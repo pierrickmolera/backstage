@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-import { errorHandler, SingleHostDiscovery } from '@backstage/backend-common';
+import { errorHandler } from '@backstage/backend-common';
 import type { Entity } from '@backstage/catalog-model';
 import {
   analyzeLocationSchema,
   locationSpecSchema,
-  CatalogPermission,
-  getEntityName,
 } from '@backstage/catalog-model';
 import { Config } from '@backstage/config';
 import { NotFoundError } from '@backstage/errors';
@@ -48,10 +46,6 @@ import {
   requireRequestBody,
   validateRequestBody,
 } from '../../service/util';
-import {
-  AuthorizeResult,
-  PermissionClient,
-} from '@backstage/permission-common';
 import { IdentityClient } from '@backstage/plugin-auth-backend';
 
 /** @deprecated This was part of the legacy catalog engine */
@@ -83,11 +77,6 @@ export async function createRouter(
 
   const router = Router();
   router.use(express.json());
-
-  const discoveryApi = SingleHostDiscovery.fromConfig(config);
-  const permissionApi = new PermissionClient({
-    discoveryApi,
-  });
 
   const readonlyEnabled =
     config.getOptionalBoolean('catalog.readonly') || false;

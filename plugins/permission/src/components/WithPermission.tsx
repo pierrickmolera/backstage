@@ -22,7 +22,7 @@ export const WithPermission = ({
   permission,
   children,
 }: PropsWithChildren<{ permission: Permission }>) => {
-  const permissionResult = usePermission(permission, {});
+  const permissionResult = usePermission(permission);
 
   return <>{permissionResult.isAllowed() ? children : null}</>;
 };
