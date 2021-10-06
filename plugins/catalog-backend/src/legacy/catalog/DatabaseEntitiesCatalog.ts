@@ -65,20 +65,11 @@ export class DatabaseEntitiesCatalog implements EntitiesCatalog {
   ) {}
 
   async entities(request?: EntitiesRequest): Promise<EntitiesResponse> {
-    // TODO(authorization-framework): Load authorize filters
-    // const permission = CatalogPermission.ENTITY_READ;
-    // const authorizationFilters = await this.permissionApi.authorizeFilters(
-    //   { permission },
-    //   { token: request?.authorizationToken },
-    // );
     const dbRequest: DbEntitiesRequest = {
       filter: request?.filter,
       pagination: request?.pagination,
     };
 
-    // TODO(mtlewis/orkohunter): Filtering using permission handler should happen here instead of the database layer.
-    // Possible: Request more entities, filter, and then request more if needed to fulfill the request.
-    // Maybe explore cursor based pagination
     const dbResponse = await this.database.transaction(tx =>
       this.database.entities(tx, dbRequest),
     );

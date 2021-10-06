@@ -17,7 +17,7 @@
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import {
   AuthorizeResult,
-  AuthorizeRequest,
+  OpaqueAuthorizeRequest,
   TechDocsPermission,
 } from '@backstage/permission-common';
 import {
@@ -34,7 +34,7 @@ import {
 
 export class SimplePermissionHandler implements PermissionHandler {
   async handle(
-    request: AuthorizeRequest,
+    request: OpaqueAuthorizeRequest,
     identity?: BackstageIdentity,
   ): Promise<HandlerResult> {
     if (TechDocsPermission.includes(request.permission)) {
@@ -47,7 +47,7 @@ export class SimplePermissionHandler implements PermissionHandler {
       if (!identity) {
         return {
           result: AuthorizeResult.DENY,
-        } as any;
+        };
       }
 
       return {
@@ -73,11 +73,11 @@ export class SimplePermissionHandler implements PermissionHandler {
     if (identity) {
       return {
         result: AuthorizeResult.ALLOW,
-      } as any;
+      };
     }
 
     return {
       result: AuthorizeResult.DENY,
-    } as any;
+    };
   }
 }

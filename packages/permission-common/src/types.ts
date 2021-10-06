@@ -25,12 +25,19 @@ export enum AuthorizeResult {
   MAYBE = 'MAYBE',
 }
 
+export type AuthorizeResource = {
+  id?: string;
+  type: string;
+};
+
 export type AuthorizeRequest = {
   permission: Permission;
-  resource?: {
-    identifier?: string;
-    type: string;
-  };
+  resource?: AuthorizeResource;
+};
+
+export type OpaqueAuthorizeRequest = {
+  permission: Permission;
+  resource?: Omit<AuthorizeResource, 'id'>;
 };
 
 export type AuthorizeRequestJSON = AuthorizeRequest & {

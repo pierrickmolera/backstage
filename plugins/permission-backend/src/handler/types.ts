@@ -15,27 +15,26 @@
  */
 
 import {
-  AuthorizeRequest,
   AuthorizeResult,
   FilterDefinition,
+  OpaqueAuthorizeRequest,
 } from '@backstage/permission-common';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 
-export interface DefinitiveHandlerResult {
+export type DefinitiveHandlerResult = {
   result: AuthorizeResult.ALLOW | AuthorizeResult.DENY;
-  conditions: never;
-}
+};
 
-export interface ConditionalHandlerResult {
+export type ConditionalHandlerResult = {
   result: AuthorizeResult.MAYBE;
   conditions: FilterDefinition;
-}
+};
 
 export type HandlerResult = DefinitiveHandlerResult | ConditionalHandlerResult;
 
 export interface PermissionHandler {
   handle(
-    request: AuthorizeRequest,
+    request: OpaqueAuthorizeRequest,
     user?: BackstageIdentity,
   ): Promise<HandlerResult>;
 }

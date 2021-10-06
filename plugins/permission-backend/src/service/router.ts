@@ -79,15 +79,14 @@ const handleRequest = async (
   permissionHandler: PermissionHandler,
   discovery: PluginEndpointDiscovery,
 ): Promise<Identified<AuthorizeResponse>> => {
-  // TODO(authorization-framework - omit resource ref to clarify intent)
   const response = await permissionHandler.handle(request, user);
 
   if (response.result === AuthorizeResult.MAYBE) {
-    if (request.resource?.identifier) {
+    if (request.resource?.id) {
       return {
         id,
         ...(await applyFilters(
-          request.resource.identifier,
+          request.resource.id,
           response.conditions,
           discovery,
         )),

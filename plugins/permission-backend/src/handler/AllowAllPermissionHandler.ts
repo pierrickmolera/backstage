@@ -15,14 +15,14 @@
  */
 import {
   AuthorizeResult,
-  AuthorizeRequest,
+  OpaqueAuthorizeRequest,
 } from '@backstage/permission-common';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import { HandlerResult, PermissionHandler } from './types';
 
 export class AllowAllPermissionHandler implements PermissionHandler {
   async handle(
-    _request: AuthorizeRequest,
+    _request: OpaqueAuthorizeRequest,
     _user?: BackstageIdentity,
   ): Promise<HandlerResult> {
     return {
