@@ -44,12 +44,14 @@ export const CatalogPermission = createPermissions({
     attributes: {
       CRUD_ACTION: CRUDAction.READ,
     },
+    resourceType: RESOURCE_TYPE_CATALOG_ENTITY,
   },
   ENTITY_UNREGISTER: {
     name: 'catalog.entity.unregister',
     attributes: {
       CRUD_ACTION: CRUDAction.DELETE,
     },
+    resourceType: RESOURCE_TYPE_CATALOG_ENTITY,
   },
 });
 

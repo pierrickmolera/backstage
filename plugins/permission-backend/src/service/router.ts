@@ -27,6 +27,7 @@ import {
   IdentityClient,
 } from '@backstage/plugin-auth-backend';
 import { Config } from '@backstage/config';
+import { InputError } from '@backstage/errors';
 import {
   Permission,
   AuthorizeResult,
@@ -79,6 +80,15 @@ const handleRequest = async (
   permissionHandler: PermissionHandler,
   discovery: PluginEndpointDiscovery,
 ): Promise<Identified<AuthorizeResponse>> => {
+  // Sanity check that any resource provided matches the one expected by the permission
+  if (
+    request.resource?.type &&
+    !request.permission.supportsType(request.resource.type)
+  ) {
+    throw new InputError(
+      `Resource type ${request.resource.type} is invalid for permission ${request.permission.name}`,
+    );
+  }
   const response = await permissionHandler.handle(request, user);
 
   if (response.result === AuthorizeResult.MAYBE) {

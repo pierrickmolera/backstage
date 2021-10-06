@@ -19,16 +19,22 @@ import { CRUDAction, PermissionAttributes } from './attributes';
 export type PermissionJSON = {
   name: string;
   attributes: PermissionAttributes;
+  resourceType?: string;
 };
 
 export class Permission {
   constructor(
     readonly name: string,
     readonly attributes: PermissionAttributes,
+    readonly resourceType?: string,
   ) {}
 
   is(permission: Permission) {
     return this.name === permission.name;
+  }
+
+  supportsType(type: string) {
+    return this.resourceType === type;
   }
 
   get isRouteVisibility() {
@@ -51,7 +57,7 @@ export class Permission {
     return this.attributes.CRUD_ACTION === CRUDAction.DELETE;
   }
 
-  static fromJSON({ name, attributes }: PermissionJSON) {
-    return new Permission(name, attributes);
+  static fromJSON({ name, attributes, resourceType }: PermissionJSON) {
+    return new Permission(name, attributes, resourceType);
   }
 }
