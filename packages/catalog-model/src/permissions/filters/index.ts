@@ -14,26 +14,6 @@
  * limitations under the License.
  */
 
-import { createPermissions, CRUDAction } from '@backstage/permission-common';
-
-export const RESOURCE_TYPE_CATALOG_ENTITY = 'catalog-entity';
-
-export const CatalogPermission = createPermissions({
-  ENTITY_READ: {
-    name: 'catalog.entity.read',
-    attributes: {
-      CRUD_ACTION: CRUDAction.READ,
-    },
-    resourceType: RESOURCE_TYPE_CATALOG_ENTITY,
-  },
-  ENTITY_UNREGISTER: {
-    name: 'catalog.entity.unregister',
-    attributes: {
-      CRUD_ACTION: CRUDAction.DELETE,
-    },
-    resourceType: RESOURCE_TYPE_CATALOG_ENTITY,
-  },
-});
-
-export * from './filters';
-export * from './filterDefinition';
+export { hasAnnotation } from './hasAnnotation';
+export { isEntityKind } from './isEntityKind';
+export { isEntityOwner } from './isEntityOwner';

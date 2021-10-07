@@ -13,27 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { EntitiesSearchFilter } from '@backstage/plugin-catalog-backend';
+import { SerializableFilterFactory } from '@backstage/permission-common';
+import { Entity } from '../../entity';
 
-import { createPermissions, CRUDAction } from '@backstage/permission-common';
+export const hasAnnotation: SerializableFilterFactory<
+  [string],
+  Entity,
+  EntitiesSearchFilter
+> = (annotation: string) => ({
+  apply: (resource: Entity) =>
+    !!resource.metadata.annotations?.hasOwnProperty(annotation),
 
-export const RESOURCE_TYPE_CATALOG_ENTITY = 'catalog-entity';
-
-export const CatalogPermission = createPermissions({
-  ENTITY_READ: {
-    name: 'catalog.entity.read',
-    attributes: {
-      CRUD_ACTION: CRUDAction.READ,
-    },
-    resourceType: RESOURCE_TYPE_CATALOG_ENTITY,
-  },
-  ENTITY_UNREGISTER: {
-    name: 'catalog.entity.unregister',
-    attributes: {
-      CRUD_ACTION: CRUDAction.DELETE,
-    },
-    resourceType: RESOURCE_TYPE_CATALOG_ENTITY,
-  },
+  serialize: () => ({
+    key: annotation,
+    matchValueExists: true,
+  }),
 });
-
-export * from './filters';
-export * from './filterDefinition';
