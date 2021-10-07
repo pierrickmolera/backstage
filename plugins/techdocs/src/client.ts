@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EntityName } from '@backstage/catalog-model';
+import { EntityName, stringifyEntityRef } from '@backstage/catalog-model';
 import { Config } from '@backstage/config';
 import { DiscoveryApi, IdentityApi } from '@backstage/core-plugin-api';
 import { NotFoundError, ResponseError } from '@backstage/errors';
@@ -175,7 +175,7 @@ export class TechDocsStorageClient implements TechDocsStorageApi {
 
     const authorizeRequest = {
       permission: TechDocsPermission.DOCS_READ,
-      context: { entityName: entityId },
+      resource: { id: stringifyEntityRef(entityId) },
     };
     const [{ result }] = await this.permissionApi.authorize(
       [authorizeRequest],
