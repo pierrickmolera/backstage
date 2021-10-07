@@ -52,18 +52,20 @@ export const createPermissions = <T extends string>(
   };
 };
 
-export type FilterFactoryResult<TResource, TFilter> = {
+export type SerializableFilter<TResource, TFilter> = {
   apply: (resource: TResource) => boolean;
   serialize: () => TFilter;
 };
 
-export type FilterFactory<TParams extends any[], TResource, TFilter> = (
-  ...params: TParams
-) => FilterFactoryResult<TResource, TFilter>;
+export type SerializableFilterFactory<
+  TParams extends any[],
+  TResource,
+  TFilter,
+> = (...params: TParams) => SerializableFilter<TResource, TFilter>;
 
-export abstract class FilterDefinition<TResource = any, TFilter = any> {
+export abstract class ResourceFilterDefinition<TResource = any, TFilter = any> {
   constructor(
-    public filters: Filters<FilterFactoryResult<TResource, TFilter>>,
+    public filters: Filters<SerializableFilter<TResource, TFilter>>,
   ) {}
 
   abstract getResourceType(): string;
@@ -97,7 +99,7 @@ export abstract class FilterDefinition<TResource = any, TFilter = any> {
   serialize(): AuthorizeResponse {
     return {
       result: AuthorizeResult.MAYBE,
-      conditions: {
+      filters: {
         anyOf: this.filters.anyOf.map(({ allOf }) => ({
           allOf: allOf.map(x => x.serialize()),
         })),

@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-import type {
-  Filters,
-  PluginEndpointDiscovery,
-} from '@backstage/backend-common';
+import type { PluginEndpointDiscovery } from '@backstage/backend-common';
 import { CatalogClient } from '@backstage/catalog-client';
 import { EntitiesSearchFilter } from '@backstage/plugin-catalog-backend';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import {
-  FilterFactory,
-  FilterFactoryResult,
-  FilterDefinition,
+  SerializableFilterFactory,
+  ResourceFilterDefinition,
   createPermissions,
   CRUDAction,
 } from '@backstage/permission-common';
@@ -52,7 +48,7 @@ export const CatalogPermission = createPermissions({
   },
 });
 
-export const isEntityKind: FilterFactory<
+export const isEntityKind: SerializableFilterFactory<
   [string[]],
   Entity,
   EntitiesSearchFilter
@@ -72,7 +68,7 @@ export const isEntityKind: FilterFactory<
   };
 };
 
-export const hasAnnotation: FilterFactory<
+export const hasAnnotation: SerializableFilterFactory<
   [string],
   Entity,
   EntitiesSearchFilter
@@ -86,7 +82,7 @@ export const hasAnnotation: FilterFactory<
   }),
 });
 
-export const isEntityOwner: FilterFactory<
+export const isEntityOwner: SerializableFilterFactory<
   [BackstageIdentity],
   Entity,
   EntitiesSearchFilter
@@ -131,7 +127,7 @@ export const isEntityOwner: FilterFactory<
   };
 };
 
-export class CatalogEntityFilterDefinition extends FilterDefinition<
+export class CatalogEntityFilterDefinition extends ResourceFilterDefinition<
   Entity,
   EntitiesSearchFilter
 > {

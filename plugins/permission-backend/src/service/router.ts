@@ -55,7 +55,9 @@ const handleRequest = async (
   if (response.result === AuthorizeResult.MAYBE) {
     // Sanity check that any resource provided matches the one expected by the permission
     if (
-      !request.permission.supportsType(response.conditions.getResourceType())
+      !request.permission.supportsType(
+        response.filterDefinition.getResourceType(),
+      )
     ) {
       throw new ConflictError(
         `Invalid resource conditions returned from permission handler for permission ${request.permission.name}`,
@@ -65,13 +67,15 @@ const handleRequest = async (
     if (resourceRef) {
       return {
         id,
-        ...(await response.conditions.apply(resourceRef, { discoveryApi })),
+        ...(await response.filterDefinition.apply(resourceRef, {
+          discoveryApi,
+        })),
       };
     }
 
     return {
       id,
-      ...response.conditions.serialize(),
+      ...response.filterDefinition.serialize(),
     };
   }
 

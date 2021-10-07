@@ -52,7 +52,7 @@ export class SimplePermissionHandler implements PermissionHandler {
 
       return {
         result: AuthorizeResult.MAYBE,
-        conditions: new CatalogEntityFilterDefinition({
+        filterDefinition: new CatalogEntityFilterDefinition({
           anyOf: [
             {
               allOf: [

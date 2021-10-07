@@ -19,6 +19,6 @@ export type { PermissionAttributes } from './attributes';
 
 export { Permission } from './permission';
 export { CRUDAction } from './attributes';
-export { createPermissions, FilterDefinition } from './util';
-export type { FilterFactory, FilterFactoryResult } from './util';
+export { createPermissions, ResourceFilterDefinition } from './util';
+export type { SerializableFilterFactory, SerializableFilter } from './util';
 export * from './techdocs';
