@@ -138,33 +138,32 @@ export class NextEntitiesCatalog implements EntitiesCatalog {
 
     let entitiesQuery = db<DbFinalEntitiesRow>('final_entities');
 
-    const permission = CatalogPermission.ENTITY_READ;
-    const authorizationFilters = authorize
-      ? (
-          await this.permissionApi.authorize([{ permission }], {
-            token: request?.authorizationToken,
-          })
-        )[0]
-      : { result: AuthorizeResult.ALLOW };
-
-    if (authorizationFilters.result === AuthorizeResult.DENY) {
-      return {
-        entities: [],
-        pageInfo: { hasNextPage: false },
-      };
-    }
-
     if (request?.filter) {
       entitiesQuery = entitiesQuery.andWhere(
         parseFiltersToDbQuery(request.filter, db),
       );
     }
 
-    if (authorizationFilters.result === AuthorizeResult.MAYBE) {
-      const filters = authorizationFilters as ConditionalAuthorizeResult<any>;
-      entitiesQuery = entitiesQuery.andWhere(
-        parseFiltersToDbQuery(filters.conditions, db),
-      );
+    if (authorize) {
+      const authorizeResponse = (
+        await this.permissionApi.authorize(
+          [{ permission: CatalogPermission.ENTITY_READ }],
+          {
+            token: request?.authorizationToken,
+          },
+        )
+      )[0];
+
+      if (authorizeResponse.result === AuthorizeResult.DENY) {
+        return {
+          entities: [],
+          pageInfo: { hasNextPage: false },
+        };
+      } else if (authorizeResponse.result === AuthorizeResult.MAYBE) {
+        entitiesQuery = entitiesQuery.andWhere(
+          parseFiltersToDbQuery(authorizeResponse.filters as EntityFilter, db),
+        );
+      }
     }
 
     // TODO: move final_entities to use entity_ref
