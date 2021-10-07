@@ -34,6 +34,7 @@ const mockPermissions = createPermissions({
   TEST: {
     name: 'test.permission',
     attributes: {},
+    resourceType: 'test-resource',
   },
 });
 
