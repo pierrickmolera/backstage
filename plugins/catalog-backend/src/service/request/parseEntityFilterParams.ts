@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { Filter, Filters } from '@backstage/backend-common';
 import { InputError } from '@backstage/errors';
+import { EntityFilter, EntitiesSearchFilter } from '../../catalog';
 import { parseStringsParam } from './common';
 
 /**
@@ -24,7 +24,7 @@ import { parseStringsParam } from './common';
  */
 export function parseEntityFilterParams(
   params: Record<string, unknown>,
-): Filters | undefined {
+): EntityFilter | undefined {
   // Each filter string is on the form a=b,c=d
   const filterStrings = parseStringsParam(params.filter, 'filter');
   if (!filterStrings) {
@@ -47,7 +47,7 @@ export function parseEntityFilterParams(
  */
 export function parseEntityFilterString(
   filterString: string,
-): Filter[] | undefined {
+): EntitiesSearchFilter[] | undefined {
   const statements = filterString
     .split(',')
     .map(s => s.trim())
@@ -57,7 +57,7 @@ export function parseEntityFilterString(
     return undefined;
   }
 
-  const filtersByKey: Record<string, Filter> = {};
+  const filtersByKey: Record<string, EntitiesSearchFilter> = {};
 
   for (const statement of statements) {
     const equalsIndex = statement.indexOf('=');

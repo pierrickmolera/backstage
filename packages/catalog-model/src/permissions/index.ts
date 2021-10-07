@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import type { PluginEndpointDiscovery } from '@backstage/backend-common';
+import type {
+  Filters,
+  PluginEndpointDiscovery,
+} from '@backstage/backend-common';
 import { CatalogClient } from '@backstage/catalog-client';
 import { EntitiesSearchFilter } from '@backstage/plugin-catalog-backend';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import {
-  Filters,
   FilterFactory,
   FilterFactoryResult,
   FilterDefinition,

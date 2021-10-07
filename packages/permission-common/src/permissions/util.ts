@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { PluginEndpointDiscovery } from '@backstage/backend-common';
+import { Filters, PluginEndpointDiscovery } from '@backstage/backend-common';
 import { Permission, PermissionJSON } from './permission';
-import { Filters } from '../types';
 
 type PermissionMethods<T extends string> = {
   get: (key: T) => Permission;

@@ -16,7 +16,6 @@
 
 import { Filters } from '@backstage/backend-common';
 import { Entity, EntityRelationSpec } from '@backstage/catalog-model';
-import { EntityPagination } from '../database/types';
 
 /**
  * A filter expression for entities.
@@ -24,9 +23,7 @@ import { EntityPagination } from '../database/types';
  * Any (at least one) of the outer sets must match, within which all of the
  * individual filters must match.
  */
-export type EntityFilter = {
-  anyOf: { allOf: EntitiesSearchFilter[] }[];
-};
+export type EntityFilter = Filters<EntitiesSearchFilter>;
 
 /**
  * A pagination rule for entities.
@@ -74,7 +71,7 @@ export type PageInfo =
 
 export type EntitiesRequest = {
   authorizationToken?: string;
-  filter?: Filters;
+  filter?: EntityFilter;
   fields?: (entity: Entity) => Entity;
   pagination?: EntityPagination;
 };

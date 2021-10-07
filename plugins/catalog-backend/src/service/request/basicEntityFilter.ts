@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { Filter, Filters } from '@backstage/backend-common';
+import { EntityFilter, EntitiesSearchFilter } from '../../catalog';
 
 /**
- * Forms a full EntityFilter based on a single key-value(s) object.
+ * Forms a full Filters object based on a single key-value(s) object.
  */
 export function basicEntityFilter(
   items: Record<string, string | string[]>,
-): Filters {
-  const filtersByKey: Record<string, Filter> = {};
+): EntityFilter {
+  const filtersByKey: Record<string, EntitiesSearchFilter> = {};
 
   for (const [key, value] of Object.entries(items)) {
     const values = [value].flat();

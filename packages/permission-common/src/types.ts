@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Filters } from '@backstage/backend-common';
 import { JsonValue } from '@backstage/config';
 import { Permission, PermissionJSON } from './permissions';
 
@@ -42,12 +43,6 @@ export type OpaqueAuthorizeRequest = {
 
 export type AuthorizeRequestJSON = AuthorizeRequest & {
   permission: PermissionJSON;
-};
-
-export type Filters<TFilter> = {
-  anyOf: {
-    allOf: TFilter[];
-  }[];
 };
 
 export type DefinitiveAuthorizeResult = {

@@ -20,7 +20,6 @@ import { InputError, NotFoundError } from '@backstage/errors';
 import { CatalogPermission } from '@backstage/catalog-model';
 import {
   AuthorizeResult,
-  ConditionalAuthorizeResult,
   PermissionClient,
 } from '@backstage/permission-common';
 import { Knex } from 'knex';

@@ -20,6 +20,6 @@
  * Any (at least one) of the outer sets must match, within which all of the
  * individual filters must match.
  */
-export type Filters = {
-  anyOf: { allOf: Filter[] }[];
+export type Filters<TFilter> = {
+  anyOf: { allOf: TFilter[] }[];
 };
