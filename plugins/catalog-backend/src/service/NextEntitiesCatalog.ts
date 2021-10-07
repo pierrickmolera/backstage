@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-import { Filters } from '@backstage/backend-common';
-import { Entity, stringifyEntityRef } from '@backstage/catalog-model';
+import {
+  CatalogPermission,
+  Entity,
+  stringifyEntityRef,
+} from '@backstage/catalog-model';
 import { InputError, NotFoundError } from '@backstage/errors';
-import { CatalogPermission } from '@backstage/catalog-model';
 import {
   AuthorizeResult,
   PermissionClient,
@@ -28,6 +30,7 @@ import {
   EntitiesRequest,
   EntitiesResponse,
   EntityAncestryResponse,
+  EntityFilter,
   EntityPagination,
 } from '../catalog/types';
 import {
@@ -73,7 +76,7 @@ function parsePagination(input?: EntityPagination): {
   return { limit, offset };
 }
 
-function parseFiltersToDbQuery(filters: Filters, db: Knex) {
+function parseFiltersToDbQuery(filters: EntityFilter, db: Knex) {
   return function parseFilters(queryBuilder: Knex.QueryBuilder) {
     // let queryBuilderTemp = queryBuilder;
     for (const singleFilter of filters.anyOf ?? []) {
