@@ -25,7 +25,6 @@ import {
   Validators,
 } from '@backstage/catalog-model';
 import { ScmIntegrations } from '@backstage/integration';
-import { PermissionClient } from '@backstage/permission-common';
 import lodash from 'lodash';
 import { EntitiesCatalog } from '../../catalog';
 import {

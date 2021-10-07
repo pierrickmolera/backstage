@@ -79,6 +79,7 @@ import { DefaultRefreshService } from './DefaultRefreshService';
 import { DefaultCatalogRulesEnforcer } from '../ingestion/CatalogRules';
 import { Config } from '@backstage/config';
 import { Logger } from 'winston';
+import { PermissionClient } from '@backstage/permission-common';
 import { LocationService } from './types';
 
 export type CatalogEnvironment = {
@@ -86,6 +87,7 @@ export type CatalogEnvironment = {
   database: PluginDatabaseManager;
   config: Config;
   reader: UrlReader;
+  permissions: PermissionClient;
 };
 
 /**
