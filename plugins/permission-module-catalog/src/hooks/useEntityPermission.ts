@@ -23,7 +23,5 @@ export const useEntityPermission = (permission: Permission) => {
   // TODO(mtlewis/orkohunter): what happens if there's no entity?
   const { entity } = useEntity();
 
-  return usePermission(permission, {
-    id: stringifyEntityRef(entity),
-  });
+  return usePermission(permission, stringifyEntityRef(entity));
 };

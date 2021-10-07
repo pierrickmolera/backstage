@@ -78,7 +78,7 @@ describe('PermissionClient', () => {
       await client.authorize([
         {
           permission: mockPermissions.TEST,
-          resource: { id: 'bar', type: 'foo' },
+          resourceRef: 'foo',
         },
       ]);
 
@@ -89,7 +89,7 @@ describe('PermissionClient', () => {
       await client.authorize([
         {
           permission: mockPermissions.TEST,
-          resource: { id: 'bar', type: 'foo' },
+          resourceRef: 'foo',
         },
       ]);
 
@@ -98,7 +98,7 @@ describe('PermissionClient', () => {
       expect(request.body[0]).toEqual(
         expect.objectContaining({
           permission: mockPermissions.TEST,
-          resource: { id: 'bar', type: 'foo' },
+          resourceRef: 'foo',
         }),
       );
     });
@@ -107,7 +107,7 @@ describe('PermissionClient', () => {
       const response = await client.authorize([
         {
           permission: mockPermissions.TEST,
-          resource: { id: 'bar', type: 'foo' },
+          resourceRef: 'foo',
         },
       ]);
 
@@ -120,7 +120,7 @@ describe('PermissionClient', () => {
       await client.authorize([
         {
           permission: mockPermissions.TEST,
-          resource: { id: 'bar', type: 'foo' },
+          resourceRef: 'foo',
         },
       ]);
 
@@ -134,7 +134,7 @@ describe('PermissionClient', () => {
         [
           {
             permission: mockPermissions.TEST,
-            resource: { id: 'bar', type: 'foo' },
+            resourceRef: 'foo',
           },
         ],
         { token },
@@ -164,7 +164,7 @@ describe('PermissionClient', () => {
             [
               {
                 permission: mockPermissions.TEST,
-                resource: { id: 'bar', type: 'foo' },
+                resourceRef: 'foo',
               },
             ],
             { token },

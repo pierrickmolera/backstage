@@ -175,7 +175,7 @@ export class TechDocsStorageClient implements TechDocsStorageApi {
 
     const authorizeRequest = {
       permission: TechDocsPermission.DOCS_READ,
-      resource: { id: stringifyEntityRef(entityId) },
+      resourceRef: stringifyEntityRef(entityId),
     };
     const [{ result }] = await this.permissionApi.authorize(
       [authorizeRequest],

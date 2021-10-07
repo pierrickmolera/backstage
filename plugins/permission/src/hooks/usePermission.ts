@@ -16,11 +16,7 @@
 
 import { useAsync } from 'react-use';
 import { permissionApiRef, useApi } from '@backstage/core-plugin-api';
-import {
-  AuthorizeResource,
-  AuthorizeResult,
-  Permission,
-} from '@backstage/permission-common';
+import { AuthorizeResult, Permission } from '@backstage/permission-common';
 
 export class AsyncPermissionResult {
   constructor(
@@ -50,7 +46,7 @@ export class AsyncPermissionResult {
 
 export const usePermission = (
   permission: Permission,
-  resource?: AuthorizeResource,
+  resourceRef?: string,
 ): AsyncPermissionResult => {
   const permissionApi = useApi(permissionApiRef);
 
@@ -58,7 +54,7 @@ export const usePermission = (
     const [{ result }] = await permissionApi.authorize([
       {
         permission,
-        resource,
+        resourceRef,
       },
     ]);
 

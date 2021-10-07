@@ -74,7 +74,7 @@ const serializeFilters = ({
 });
 
 const handleRequest = async (
-  { id, resource, ...request }: Identified<AuthorizeRequest>,
+  { id, resourceRef, ...request }: Identified<AuthorizeRequest>,
   user: BackstageIdentity | undefined,
   permissionHandler: PermissionHandler,
   discovery: PluginEndpointDiscovery,
@@ -89,10 +89,10 @@ const handleRequest = async (
       );
     }
 
-    if (resource?.id) {
+    if (resourceRef) {
       return {
         id,
-        ...(await applyFilters(resource.id, response.conditions, discovery)),
+        ...(await applyFilters(resourceRef, response.conditions, discovery)),
       };
     }
 
