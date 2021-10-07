@@ -35,6 +35,7 @@
     "@backstage/config": "^0.1.10",
     "@backstage/errors": "^0.1.2",
     "@backstage/permission-common": "^0.1.0",
+    "@backstage/plugin-catalog-backend": "^0.17.0",
     "@backstage/plugin-auth-backend": "^0.4.1",
     "@types/json-schema": "^7.0.5",
     "@types/yup": "^0.29.13",

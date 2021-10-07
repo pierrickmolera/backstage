@@ -16,6 +16,7 @@
 
 import type { PluginEndpointDiscovery } from '@backstage/backend-common';
 import { CatalogClient } from '@backstage/catalog-client';
+import { EntitiesSearchFilter } from '@backstage/plugin-catalog-backend';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import {
   Filters,
@@ -29,12 +30,6 @@ import { Entity, EntityRelation } from '../entity';
 import { parseEntityRef, stringifyEntityRef } from '../entity/ref';
 import { RELATION_OWNED_BY } from '../kinds/relations';
 import { EntityName } from '../types';
-
-export type EntityFilter = {
-  key: string;
-  matchValueIn?: string[];
-  matchValueExists?: boolean;
-};
 
 export const RESOURCE_TYPE_CATALOG_ENTITY = 'catalog-entity';
 
@@ -55,9 +50,11 @@ export const CatalogPermission = createPermissions({
   },
 });
 
-export const isEntityKind: FilterFactory<[string[]], Entity, EntityFilter> = (
-  kinds: string[],
-) => {
+export const isEntityKind: FilterFactory<
+  [string[]],
+  Entity,
+  EntitiesSearchFilter
+> = (kinds: string[]) => {
   const normalizedKinds = kinds.map(kind => kind.toLocaleLowerCase('en-US'));
 
   return {
@@ -73,9 +70,11 @@ export const isEntityKind: FilterFactory<[string[]], Entity, EntityFilter> = (
   };
 };
 
-export const hasAnnotation: FilterFactory<[string], Entity, EntityFilter> = (
-  annotation: string,
-) => ({
+export const hasAnnotation: FilterFactory<
+  [string],
+  Entity,
+  EntitiesSearchFilter
+> = (annotation: string) => ({
   apply: (resource: Entity) =>
     !!resource.metadata.annotations?.hasOwnProperty(annotation),
 
@@ -88,7 +87,7 @@ export const hasAnnotation: FilterFactory<[string], Entity, EntityFilter> = (
 export const isEntityOwner: FilterFactory<
   [BackstageIdentity],
   Entity,
-  EntityFilter
+  EntitiesSearchFilter
 > = (identity: BackstageIdentity) => {
   // TODO(authorization-framework) eventually all the claims
   // should be pulled off the token and used to evaluate
@@ -131,14 +130,14 @@ export const isEntityOwner: FilterFactory<
 };
 
 export class CatalogEntityFilterDefinition
-  implements FilterDefinition<Entity, EntityFilter>
+  implements FilterDefinition<Entity, EntitiesSearchFilter>
 {
   get resourceType() {
     return RESOURCE_TYPE_CATALOG_ENTITY;
   }
 
   constructor(
-    public filters: Filters<FilterFactoryResult<Entity, EntityFilter>>,
+    public filters: Filters<FilterFactoryResult<Entity, EntitiesSearchFilter>>,
   ) {}
 
   getResource(
