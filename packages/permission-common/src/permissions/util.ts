@@ -82,6 +82,8 @@ export abstract class ResourceFilterDefinition<TResource = any, TFilter = any> {
     const resource = await this.getResource(resourceRef, env);
 
     if (!resource) {
+      // TODO(authorization-framework): this should probably be a DENY
+      // to prevent the api being used to fish for valid resource refs.
       throw new ConflictError(
         'Authorization requested for non-existent resource',
       );

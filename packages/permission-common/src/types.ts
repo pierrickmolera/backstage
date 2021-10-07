@@ -28,6 +28,9 @@ export enum AuthorizeResult {
 
 export type AuthorizeRequest = {
   permission: Permission;
+  // TODO(authorization-framework): consider making AuthorizeRequest
+  // generic to allow the type of the resourceRef to be specified at
+  // permission creation time.
   resourceRef?: string;
 };
 

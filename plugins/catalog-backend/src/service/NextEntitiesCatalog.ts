@@ -160,6 +160,8 @@ export class NextEntitiesCatalog implements EntitiesCatalog {
           pageInfo: { hasNextPage: false },
         };
       } else if (authorizeResponse.result === AuthorizeResult.MAYBE) {
+        // TODO(authorization-framework): explore inferring the type of the filters
+        // object based on the supplied permission.
         entitiesQuery = entitiesQuery.andWhere(
           parseFiltersToDbQuery(authorizeResponse.filters as EntityFilter, db),
         );
