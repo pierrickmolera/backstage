@@ -15,6 +15,12 @@
  */
 
 import { Filters, PluginEndpointDiscovery } from '@backstage/backend-common';
+import { ConflictError } from '@backstage/errors';
+import {
+  DefinitiveAuthorizeResult,
+  AuthorizeResponse,
+  AuthorizeResult,
+} from '../types';
 import { Permission, PermissionJSON } from './permission';
 
 type PermissionMethods<T extends string> = {
@@ -55,12 +61,47 @@ export type FilterFactory<TParams extends any[], TResource, TFilter> = (
   ...params: TParams
 ) => FilterFactoryResult<TResource, TFilter>;
 
-export interface FilterDefinition<TResource = any, TFilter = any> {
-  resourceType: string;
-  filters: Filters<FilterFactoryResult<TResource, TFilter>>;
+export abstract class FilterDefinition<TResource = any, TFilter = any> {
+  constructor(
+    public filters: Filters<FilterFactoryResult<TResource, TFilter>>,
+  ) {}
 
-  getResource(
+  abstract getResourceType(): string;
+
+  abstract getResource(
     resourceRef: string,
-    environment: { discoveryApi: PluginEndpointDiscovery },
+    env: { discoveryApi: PluginEndpointDiscovery },
   ): Promise<TResource | undefined>;
+
+  async apply(
+    resourceRef: string,
+    env: { discoveryApi: PluginEndpointDiscovery },
+  ): Promise<DefinitiveAuthorizeResult> {
+    const resource = await this.getResource(resourceRef, env);
+
+    if (!resource) {
+      throw new ConflictError(
+        'Authorization requested for non-existent resource',
+      );
+    }
+
+    return {
+      result: this.filters.anyOf.some(anyOf =>
+        anyOf.allOf.every(filter => filter.apply(resource)),
+      )
+        ? AuthorizeResult.ALLOW
+        : AuthorizeResult.DENY,
+    };
+  }
+
+  serialize(): AuthorizeResponse {
+    return {
+      result: AuthorizeResult.MAYBE,
+      conditions: {
+        anyOf: this.filters.anyOf.map(({ allOf }) => ({
+          allOf: allOf.map(x => x.serialize()),
+        })),
+      },
+    };
+  }
 }

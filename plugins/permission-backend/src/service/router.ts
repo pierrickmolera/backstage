@@ -33,11 +33,10 @@ import {
   AuthorizeResult,
   AuthorizeResponse,
   AuthorizeRequest,
-  FilterDefinition,
   AuthorizeRequestJSON,
   Identified,
 } from '@backstage/permission-common';
-import { ConditionalHandlerResult, PermissionHandler } from '../handler';
+import { PermissionHandler } from '../handler';
 
 export interface RouterOptions {
   logger: Logger;
@@ -45,45 +44,19 @@ export interface RouterOptions {
   permissionHandler: PermissionHandler;
 }
 
-const applyFilters = async (
-  resourceRef: string,
-  conditions: FilterDefinition,
-  discoveryApi: PluginEndpointDiscovery,
-): Promise<AuthorizeResponse> => {
-  const resource = await conditions.getResource(resourceRef, { discoveryApi });
-
-  return {
-    result: conditions.filters.anyOf.some(anyOf =>
-      anyOf.allOf.every(filter => filter.apply(resource)),
-    )
-      ? AuthorizeResult.ALLOW
-      : AuthorizeResult.DENY,
-  };
-};
-
-const serializeFilters = ({
-  result,
-  conditions,
-}: ConditionalHandlerResult): AuthorizeResponse => ({
-  result,
-  conditions: {
-    anyOf: conditions.filters.anyOf.map(({ allOf }) => ({
-      allOf: allOf.map(x => x.serialize()),
-    })),
-  },
-});
-
 const handleRequest = async (
   { id, resourceRef, ...request }: Identified<AuthorizeRequest>,
   user: BackstageIdentity | undefined,
   permissionHandler: PermissionHandler,
-  discovery: PluginEndpointDiscovery,
+  discoveryApi: PluginEndpointDiscovery,
 ): Promise<Identified<AuthorizeResponse>> => {
   const response = await permissionHandler.handle(request, user);
 
   if (response.result === AuthorizeResult.MAYBE) {
     // Sanity check that any resource provided matches the one expected by the permission
-    if (!request.permission.supportsType(response.conditions.resourceType)) {
+    if (
+      !request.permission.supportsType(response.conditions.getResourceType())
+    ) {
       throw new ConflictError(
         `Invalid resource conditions returned from permission handler for permission ${request.permission.name}`,
       );
@@ -92,13 +65,13 @@ const handleRequest = async (
     if (resourceRef) {
       return {
         id,
-        ...(await applyFilters(resourceRef, response.conditions, discovery)),
+        ...(await response.conditions.apply(resourceRef, { discoveryApi })),
       };
     }
 
     return {
       id,
-      ...serializeFilters(response),
+      ...response.conditions.serialize(),
     };
   }
 

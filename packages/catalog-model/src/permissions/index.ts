@@ -131,16 +131,13 @@ export const isEntityOwner: FilterFactory<
   };
 };
 
-export class CatalogEntityFilterDefinition
-  implements FilterDefinition<Entity, EntitiesSearchFilter>
-{
-  get resourceType() {
+export class CatalogEntityFilterDefinition extends FilterDefinition<
+  Entity,
+  EntitiesSearchFilter
+> {
+  getResourceType() {
     return RESOURCE_TYPE_CATALOG_ENTITY;
   }
-
-  constructor(
-    public filters: Filters<FilterFactoryResult<Entity, EntitiesSearchFilter>>,
-  ) {}
 
   getResource(
     resourceRef: string,
