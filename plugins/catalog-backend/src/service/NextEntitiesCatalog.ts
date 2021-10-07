@@ -138,12 +138,6 @@ export class NextEntitiesCatalog implements EntitiesCatalog {
 
     let entitiesQuery = db<DbFinalEntitiesRow>('final_entities');
 
-    if (request?.filter) {
-      entitiesQuery = entitiesQuery.andWhere(
-        parseFiltersToDbQuery(request.filter, db),
-      );
-    }
-
     if (authorize) {
       const authorizeResponse = (
         await this.permissionApi.authorize(
@@ -166,6 +160,12 @@ export class NextEntitiesCatalog implements EntitiesCatalog {
           parseFiltersToDbQuery(authorizeResponse.filters as EntityFilter, db),
         );
       }
+    }
+
+    if (request?.filter) {
+      entitiesQuery = entitiesQuery.andWhere(
+        parseFiltersToDbQuery(request.filter, db),
+      );
     }
 
     // TODO: move final_entities to use entity_ref
