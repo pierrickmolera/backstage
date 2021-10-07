@@ -15,10 +15,7 @@
  */
 
 import { useEntity } from '@backstage/plugin-catalog-react';
-import {
-  RESOURCE_TYPE_CATALOG_ENTITY,
-  stringifyEntityRef,
-} from '@backstage/catalog-model';
+import { stringifyEntityRef } from '@backstage/catalog-model';
 import { Permission } from '@backstage/permission-common';
 import { usePermission } from '@backstage/plugin-permission';
 
@@ -28,6 +25,5 @@ export const useEntityPermission = (permission: Permission) => {
 
   return usePermission(permission, {
     id: stringifyEntityRef(entity),
-    type: RESOURCE_TYPE_CATALOG_ENTITY,
   });
 };

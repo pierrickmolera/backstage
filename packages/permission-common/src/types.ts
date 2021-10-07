@@ -27,8 +27,7 @@ export enum AuthorizeResult {
 }
 
 export type AuthorizeResource = {
-  id?: string;
-  type: string;
+  id: string;
 };
 
 export type AuthorizeRequest = {
@@ -38,7 +37,6 @@ export type AuthorizeRequest = {
 
 export type OpaqueAuthorizeRequest = {
   permission: Permission;
-  resource?: Omit<AuthorizeResource, 'id'>;
 };
 
 export type AuthorizeRequestJSON = AuthorizeRequest & {

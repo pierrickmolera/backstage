@@ -43,7 +43,7 @@ export class SimplePermissionHandler implements PermissionHandler {
       };
     }
 
-    if (request.resource?.type === RESOURCE_TYPE_CATALOG_ENTITY) {
+    if (request.permission.resourceType === RESOURCE_TYPE_CATALOG_ENTITY) {
       if (!identity) {
         return {
           result: AuthorizeResult.DENY,

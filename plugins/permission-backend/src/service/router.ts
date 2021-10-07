@@ -27,7 +27,7 @@ import {
   IdentityClient,
 } from '@backstage/plugin-auth-backend';
 import { Config } from '@backstage/config';
-import { InputError } from '@backstage/errors';
+import { ConflictError } from '@backstage/errors';
 import {
   Permission,
   AuthorizeResult,
@@ -73,33 +73,26 @@ const serializeFilters = ({
   },
 });
 
-//
 const handleRequest = async (
-  { id, ...request }: Identified<AuthorizeRequest>,
+  { id, resource, ...request }: Identified<AuthorizeRequest>,
   user: BackstageIdentity | undefined,
   permissionHandler: PermissionHandler,
   discovery: PluginEndpointDiscovery,
 ): Promise<Identified<AuthorizeResponse>> => {
-  // Sanity check that any resource provided matches the one expected by the permission
-  if (
-    request.resource?.type &&
-    !request.permission.supportsType(request.resource.type)
-  ) {
-    throw new InputError(
-      `Resource type ${request.resource.type} is invalid for permission ${request.permission.name}`,
-    );
-  }
   const response = await permissionHandler.handle(request, user);
 
   if (response.result === AuthorizeResult.MAYBE) {
-    if (request.resource?.id) {
+    // Sanity check that any resource provided matches the one expected by the permission
+    if (!request.permission.supportsType(response.conditions.resourceType)) {
+      throw new ConflictError(
+        `Invalid resource conditions returned from permission handler for permission ${request.permission.name}`,
+      );
+    }
+
+    if (resource?.id) {
       return {
         id,
-        ...(await applyFilters(
-          request.resource.id,
-          response.conditions,
-          discovery,
-        )),
+        ...(await applyFilters(resource.id, response.conditions, discovery)),
       };
     }
 
