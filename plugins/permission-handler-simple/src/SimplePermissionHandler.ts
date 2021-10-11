@@ -27,7 +27,6 @@ import {
 import {
   CatalogEntityFilterDefinition,
   isEntityOwner,
-  hasAnnotation,
   isEntityKind,
   RESOURCE_TYPE_CATALOG_ENTITY,
 } from '@backstage/catalog-model';
@@ -55,10 +54,7 @@ export class SimplePermissionHandler implements PermissionHandler {
         filterDefinition: new CatalogEntityFilterDefinition({
           anyOf: [
             {
-              allOf: [
-                isEntityOwner(identity),
-                hasAnnotation('backstage.io/view-url'),
-              ],
+              allOf: [isEntityOwner(identity)],
             },
             {
               allOf: [isEntityKind(['template'])],
