@@ -54,7 +54,7 @@ export const isEntityOwner: SerializableFilterFactory<
     },
 
     serialize: () => ({
-      key: RELATION_OWNED_BY,
+      key: 'spec.owner',
       matchValueIn: [
         stringifyEntityRef({
           kind: 'user',
