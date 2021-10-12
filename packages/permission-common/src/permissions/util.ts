@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import { Filters, PluginEndpointDiscovery } from '@backstage/backend-common';
-import { ConflictError } from '@backstage/errors';
-import {
-  DefinitiveAuthorizeResult,
-  AuthorizeResponse,
-  AuthorizeResult,
-} from '../types';
+import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import { Permission, PermissionJSON } from './permission';
 
 type PermissionMethods<T extends string> = {
@@ -52,60 +46,24 @@ export const createPermissions = <T extends string>(
   };
 };
 
-export type SerializableFilter<TResource, TFilter> = {
-  apply: (resource: TResource) => boolean;
-  serialize: () => TFilter;
+export type FilterDefinition = {
+  name: string;
+  params?: object;
 };
 
-export type SerializableFilterFactory<
-  TParams extends any[],
-  TResource,
-  TFilter,
-> = (...params: TParams) => SerializableFilter<TResource, TFilter>;
-
-export abstract class ResourceFilterDefinition<TResource = any, TFilter = any> {
-  constructor(
-    public filters: Filters<SerializableFilter<TResource, TFilter>>,
-  ) {}
-
-  abstract getResourceType(): string;
-
-  abstract getResource(
-    resourceRef: string,
-    env: { discoveryApi: PluginEndpointDiscovery },
-  ): Promise<TResource | undefined>;
-
-  async apply(
-    resourceRef: string,
-    env: { discoveryApi: PluginEndpointDiscovery },
-  ): Promise<DefinitiveAuthorizeResult> {
-    const resource = await this.getResource(resourceRef, env);
-
-    if (!resource) {
-      // TODO(authorization-framework): this should probably be a DENY
-      // to prevent the api being used to fish for valid resource refs.
-      throw new ConflictError(
-        'Authorization requested for non-existent resource',
-      );
-    }
-
-    return {
-      result: this.filters.anyOf.some(anyOf =>
-        anyOf.allOf.every(filter => filter.apply(resource)),
-      )
-        ? AuthorizeResult.ALLOW
-        : AuthorizeResult.DENY,
-    };
-  }
-
-  serialize(): AuthorizeResponse {
-    return {
-      result: AuthorizeResult.MAYBE,
-      filters: {
-        anyOf: this.filters.anyOf.map(({ allOf }) => ({
-          allOf: allOf.map(x => x.serialize()),
-        })),
-      },
-    };
-  }
-}
+export type FilterResolver<TResource, TFilter, TParams extends any[] = []> = {
+  name: string;
+  description: string;
+  // TODO(authorization-framework): more restrictive
+  // type for params: JSONSchema?
+  params: Record<number, object>;
+  apply: (
+    identity: BackstageIdentity | undefined,
+    resource: TResource,
+    params: TParams,
+  ) => boolean;
+  serialize: (
+    identity: BackstageIdentity | undefined,
+    params: TParams,
+  ) => TFilter;
+};

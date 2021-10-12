@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Backstage Authors
+ * Copyright 2021 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-/**
- * The Backstage backend plugin that provides the Backstage catalog
- *
- * @packageDocumentation
- */
+import { Filters } from '@backstage/backend-common';
+import { FilterDefinition } from '@backstage/permission-common';
 
-export * from './catalog';
-export * from './ingestion';
-export * from './legacy';
-export * from './search';
-export * from './util';
-export * from './permissions';
-export * from './processing';
-export * from './providers';
-export * from './service';
+export abstract class ResourceFilters {
+  constructor(public filters: Filters<FilterDefinition>) {}
+
+  abstract getResourceType(): string;
+
+  abstract getPluginId(): string;
+}

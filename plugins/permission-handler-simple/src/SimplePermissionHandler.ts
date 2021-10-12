@@ -25,11 +25,11 @@ import {
   PermissionHandler,
 } from '@backstage/plugin-permission-backend';
 import {
-  CatalogEntityFilterDefinition,
   isEntityOwner,
   isEntityKind,
-  RESOURCE_TYPE_CATALOG_ENTITY,
-} from '@backstage/catalog-model';
+  CatalogEntityFilters,
+} from '@backstage/plugin-catalog-backend';
+import { RESOURCE_TYPE_CATALOG_ENTITY } from '@backstage/catalog-model';
 
 export class SimplePermissionHandler implements PermissionHandler {
   async handle(
@@ -51,13 +51,15 @@ export class SimplePermissionHandler implements PermissionHandler {
 
       return {
         result: AuthorizeResult.MAYBE,
-        filterDefinition: new CatalogEntityFilterDefinition({
+        filterDefinition: new CatalogEntityFilters({
           anyOf: [
             {
-              allOf: [isEntityOwner(identity)],
+              // TODO(authorization-framework) restore a nice way to import a filter
+              // and serialize it here.
+              allOf: [{ name: isEntityOwner.name }],
             },
             {
-              allOf: [isEntityKind(['template'])],
+              allOf: [{ name: isEntityKind.name, params: [['template']] }],
             },
             // TODO(authorization-framework) we probably need the ability
             // to do negative matching (i.e. exclude all entities of type X)

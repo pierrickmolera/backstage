@@ -18,7 +18,9 @@ import {
   errorHandler,
   SingleHostDiscovery,
   PluginEndpointDiscovery,
+  Filters,
 } from '@backstage/backend-common';
+import fetch from 'cross-fetch';
 import express, { Request, Response } from 'express';
 import Router from 'express-promise-router';
 import { Logger } from 'winston';
@@ -27,7 +29,7 @@ import {
   IdentityClient,
 } from '@backstage/plugin-auth-backend';
 import { Config } from '@backstage/config';
-import { ConflictError } from '@backstage/errors';
+import { ConflictError, ResponseError } from '@backstage/errors';
 import {
   Permission,
   AuthorizeResult,
@@ -37,6 +39,7 @@ import {
   Identified,
 } from '@backstage/permission-common';
 import { PermissionHandler } from '../handler';
+import { ResourceFilters } from '..';
 
 export interface RouterOptions {
   logger: Logger;
@@ -44,11 +47,44 @@ export interface RouterOptions {
   permissionHandler: PermissionHandler;
 }
 
+// TODO(authorization-framework) probably move this to a separate client
+const applyFilters = async (
+  resourceRef: string,
+  filterDefinition: ResourceFilters,
+  discoveryApi: PluginEndpointDiscovery,
+  authHeader?: string,
+): Promise<Filters<boolean>> => {
+  const endpoint = `${await discoveryApi.getBaseUrl(
+    filterDefinition.getPluginId(),
+  )}/permissions/resolve-filters`;
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    body: JSON.stringify({
+      resourceRef,
+      resourceType: filterDefinition.getResourceType(),
+      filters: filterDefinition.filters,
+    }),
+    headers: {
+      ...(authHeader ? { authorization: authHeader } : {}),
+      'content-type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw await ResponseError.fromResponse(response);
+  }
+
+  // TODO(authorization-framework) validate response
+  return response.json();
+};
+
 const handleRequest = async (
   { id, resourceRef, ...request }: Identified<AuthorizeRequest>,
   user: BackstageIdentity | undefined,
   permissionHandler: PermissionHandler,
   discoveryApi: PluginEndpointDiscovery,
+  authHeader?: string,
 ): Promise<Identified<AuthorizeResponse>> => {
   const response = await permissionHandler.handle(request, user);
 
@@ -64,18 +100,31 @@ const handleRequest = async (
       );
     }
 
+    // TODO(authorization-framework): as of right now, the apply-filters endpoint
+    // receives a Filters shape - it seems worth exploring instead sending it a
+    // flat array of filters and mapping them back onto the filters object. Otherwise
+    // we're giving control of the shape of the filters to the endpoint unnecessarily.
+
     if (resourceRef) {
       return {
         id,
-        ...(await response.filterDefinition.apply(resourceRef, {
-          discoveryApi,
-        })),
+        result: (
+          await applyFilters(
+            resourceRef,
+            response.filterDefinition,
+            discoveryApi,
+            authHeader,
+          )
+        ).anyOf.some(({ allOf }) => allOf.every(val => val))
+          ? AuthorizeResult.ALLOW
+          : AuthorizeResult.DENY,
       };
     }
 
     return {
       id,
-      ...response.filterDefinition.serialize(),
+      result: AuthorizeResult.MAYBE,
+      filters: response.filterDefinition.filters,
     };
   }
 
@@ -119,7 +168,13 @@ export async function createRouter(
       res.json(
         await Promise.all(
           authorizeRequests.map(request =>
-            handleRequest(request, user, permissionHandler, discovery),
+            handleRequest(
+              request,
+              user,
+              permissionHandler,
+              discovery,
+              req.header('authorization'),
+            ),
           ),
         ),
       );

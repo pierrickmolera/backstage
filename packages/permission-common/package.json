@@ -34,6 +34,7 @@
     "@backstage/core-plugin-api": "^0.1.6",
     "@backstage/config": "^0.1.5",
     "@backstage/errors": "^0.1.1",
+    "@backstage/plugin-auth-backend": "^0.4.3",
     "cross-fetch": "^3.0.6",
     "uuid": "^8.0.0"
   },

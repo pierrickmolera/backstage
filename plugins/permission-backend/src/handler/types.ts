@@ -17,14 +17,14 @@
 import {
   AuthorizeResult,
   DefinitiveAuthorizeResult,
-  ResourceFilterDefinition,
   OpaqueAuthorizeRequest,
 } from '@backstage/permission-common';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
+import { ResourceFilters } from '../resolution';
 
 export type ConditionalHandlerResult = {
   result: AuthorizeResult.MAYBE;
-  filterDefinition: ResourceFilterDefinition;
+  filterDefinition: ResourceFilters;
 };
 
 export type HandlerResult =

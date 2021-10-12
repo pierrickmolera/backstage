@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Backstage Authors
+ * Copyright 2021 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-/**
- * The Backstage backend plugin that provides the Backstage catalog
- *
- * @packageDocumentation
- */
+import { FilterResolver } from '@backstage/permission-common';
 
-export * from './catalog';
-export * from './ingestion';
-export * from './legacy';
-export * from './search';
-export * from './util';
-export * from './permissions';
-export * from './processing';
-export * from './providers';
-export * from './service';
+export interface ResourceFilterResolverConfig<TResource, TFilter> {
+  getResolvers(): FilterResolver<TResource, TFilter, any>[];
+  getResourceType(): string;
+  getResource(resourceRef: string): Promise<TResource | undefined>;
+}

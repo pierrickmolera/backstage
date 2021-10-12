@@ -34,6 +34,3 @@ export const CatalogPermission = createPermissions({
     resourceType: RESOURCE_TYPE_CATALOG_ENTITY,
   },
 });
-
-export * from './filters';
-export * from './filterDefinition';

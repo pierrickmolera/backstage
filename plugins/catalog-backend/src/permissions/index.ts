@@ -14,6 +14,5 @@
  * limitations under the License.
  */
 
-export { hasAnnotation } from './hasAnnotation';
-export { isEntityKind } from './isEntityKind';
-export { isEntityOwner } from './isEntityOwner';
+export * from './filterResolvers';
+export { CatalogEntityFilters } from './filterDefinition';
