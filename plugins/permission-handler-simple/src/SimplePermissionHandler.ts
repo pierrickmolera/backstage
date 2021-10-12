@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { BackstageIdentity } from '@backstage/plugin-auth-backend';
+import {
+  BackstageIdentity,
+  getIdentityClaims,
+} from '@backstage/plugin-auth-backend';
 import {
   AuthorizeResult,
   OpaqueAuthorizeRequest,
@@ -25,11 +28,12 @@ import {
   PermissionHandler,
 } from '@backstage/plugin-permission-backend';
 import {
-  isEntityOwner,
-  isEntityKind,
   CatalogEntityFilters,
+  PermissionConditions,
 } from '@backstage/plugin-catalog-backend';
 import { RESOURCE_TYPE_CATALOG_ENTITY } from '@backstage/catalog-model';
+
+const { isEntityKind, isEntityOwner, hasAnnotation } = PermissionConditions;
 
 export class SimplePermissionHandler implements PermissionHandler {
   async handle(
@@ -54,12 +58,13 @@ export class SimplePermissionHandler implements PermissionHandler {
         filterDefinition: new CatalogEntityFilters({
           anyOf: [
             {
-              // TODO(authorization-framework) restore a nice way to import a filter
-              // and serialize it here.
-              allOf: [{ name: isEntityOwner.name }],
+              allOf: [
+                isEntityOwner(getIdentityClaims(identity)),
+                hasAnnotation('backstage.io/view-url'),
+              ],
             },
             {
-              allOf: [{ name: isEntityKind.name, params: [['template']] }],
+              allOf: isEntityKind(['template']),
             },
             // TODO(authorization-framework) we probably need the ability
             // to do negative matching (i.e. exclude all entities of type X)

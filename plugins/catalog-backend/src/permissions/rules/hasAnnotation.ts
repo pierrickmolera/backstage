@@ -13,34 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { BackstageIdentity } from '@backstage/plugin-auth-backend';
-import { FilterResolver } from '@backstage/permission-common';
 import { Entity } from '@backstage/catalog-model';
-import { EntitiesSearchFilter } from '../../catalog/types';
+import {
+  PermissionCondition,
+  PermissionRule,
+} from '@backstage/permission-common';
+import { CatalogPermissionMatcher } from './types';
 
-export const hasAnnotation: FilterResolver<
-  Entity,
-  EntitiesSearchFilter,
-  [string]
-> = {
+export const hasAnnotationRule: PermissionRule = {
   name: 'HAS_ANNOTATION',
   description:
     'Allow entities which are annotated with the specified annotation',
-  params: [
-    {
-      type: 'string',
-    },
-  ],
-  apply: (
-    _identity: BackstageIdentity | undefined,
-    resource: Entity,
-    [annotation]: [string],
-  ) => !!resource.metadata.annotations?.hasOwnProperty(annotation),
+};
 
-  serialize: (
-    _identity: BackstageIdentity | undefined,
-    [annotation]: [string],
-  ) => ({
+export function hasAnnotation(annotation: string): PermissionCondition {
+  return {
+    rule: hasAnnotationRule.name,
+    params: annotation,
+  };
+}
+
+export const hasAnnotationMatcher: CatalogPermissionMatcher<string> = {
+  apply: (resource: Entity, annotation: string) =>
+    !!resource.metadata.annotations?.hasOwnProperty(annotation[0]),
+
+  serialize: (annotation: string) => ({
     key: annotation,
     matchValueExists: true,
   }),

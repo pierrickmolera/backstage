@@ -48,7 +48,7 @@ export type DefinitiveAuthorizeResult = {
 
 export type ConditionalAuthorizeResult<T> = {
   result: AuthorizeResult.MAYBE;
-  filters: Filters<T>;
+  conditions: Filters<T>;
 };
 
 export type AuthorizeResponse<TFilter extends JsonValue = JsonValue> =

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Filters } from '@backstage/backend-common';
 import {
   CatalogPermission,
   Entity,
@@ -23,6 +24,7 @@ import { InputError, NotFoundError } from '@backstage/errors';
 import {
   AuthorizeResult,
   PermissionClient,
+  PermissionCondition,
 } from '@backstage/permission-common';
 import { Knex } from 'knex';
 import {
@@ -33,6 +35,7 @@ import {
   EntityFilter,
   EntityPagination,
 } from '../catalog/types';
+import { toFilters } from '../permissions/filters';
 import {
   DbFinalEntitiesRow,
   DbRefreshStateReferencesRow,
@@ -156,8 +159,11 @@ export class NextEntitiesCatalog implements EntitiesCatalog {
       } else if (authorizeResponse.result === AuthorizeResult.MAYBE) {
         // TODO(authorization-framework): explore inferring the type of the filters
         // object based on the supplied permission.
+        const authorizationFilters = toFilters(
+          authorizeResponse.conditions as Filters<PermissionCondition>,
+        );
         entitiesQuery = entitiesQuery.andWhere(
-          parseFiltersToDbQuery(authorizeResponse.filters as EntityFilter, db),
+          parseFiltersToDbQuery(authorizationFilters, db),
         );
       }
     }

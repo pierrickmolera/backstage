@@ -13,42 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { BackstageIdentity } from '@backstage/plugin-auth-backend';
-import { FilterResolver } from '@backstage/permission-common';
 import { Entity } from '@backstage/catalog-model';
-import { EntitiesSearchFilter } from '../../catalog/types';
+import {
+  PermissionCondition,
+  PermissionRule,
+} from '@backstage/permission-common';
+import { CatalogPermissionMatcher } from './types';
 
-export const isEntityKind: FilterResolver<
-  Entity,
-  EntitiesSearchFilter,
-  [string[]]
-> = {
+export const isEntityKindRule: PermissionRule = {
   name: 'IS_ENTITY_KIND',
   description: 'Allow entities with the specified kind',
-  params: [
-    {
-      type: 'array',
-      items: {
-        type: 'string',
-      },
-    },
-  ],
-  apply: (
-    _identity: BackstageIdentity | undefined,
-    resource: Entity,
-    params: [string[]],
-  ) => {
-    console.log(params);
-    return params[0]
+};
+
+export function isEntityKind(kinds: string[]): PermissionCondition {
+  return {
+    rule: isEntityKindRule.name,
+    params: kinds,
+  };
+}
+
+export const isEntityKindMatcher: CatalogPermissionMatcher<string[]> = {
+  apply: (resource: Entity, kinds: string[]) => {
+    return kinds
       .map(kind => kind.toLocaleLowerCase('en-US'))
       .some(kind => kind === resource.kind.toLocaleLowerCase('en-US'));
   },
 
-  serialize: (_identity: BackstageIdentity | undefined, params: [string[]]) => {
-    console.log(params);
+  serialize: (kinds: string[]) => {
     return {
       key: 'kind',
-      matchValueIn: params[0].map(kind => kind.toLocaleLowerCase('en-US')),
+      matchValueIn: kinds.map(kind => kind.toLocaleLowerCase('en-US')),
     };
   },
 };

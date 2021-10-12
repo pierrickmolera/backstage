@@ -20,11 +20,37 @@ import {
   parseEntityRef,
   RESOURCE_TYPE_CATALOG_ENTITY,
 } from '@backstage/catalog-model';
-import { hasAnnotation } from './hasAnnotation';
-import { isEntityKind } from './isEntityKind';
-import { isEntityOwner } from './isEntityOwner';
+import {
+  hasAnnotation,
+  hasAnnotationMatcher,
+  hasAnnotationRule,
+} from './hasAnnotation';
+import {
+  isEntityKind,
+  isEntityKindMatcher,
+  isEntityKindRule,
+} from './isEntityKind';
+import {
+  isEntityOwner,
+  isEntityOwnerMatcher,
+  isEntityOwnerRule,
+} from './isEntityOwner';
 import { EntitiesCatalog, EntitiesSearchFilter } from '../../catalog/types';
 import { basicEntityFilter } from '../../service/request';
+
+// TODO(authorization-framework): Feels a bit dirty... but at least this is next to where the
+// permissions are exported
+export const PermissionLookup = {
+  [hasAnnotationRule.name]: hasAnnotationMatcher,
+  [isEntityKindRule.name]: isEntityKindMatcher,
+  [isEntityOwnerRule.name]: isEntityOwnerMatcher,
+};
+
+export const PermissionConditions = {
+  hasAnnotation,
+  isEntityKind,
+  isEntityOwner,
+};
 
 export class CatalogEntityFilterResolverConfig
   implements ResourceFilterResolverConfig<Entity, EntitiesSearchFilter>
@@ -60,5 +86,3 @@ export class CatalogEntityFilterResolverConfig
     return entities[0];
   }
 }
-
-export { hasAnnotation, isEntityKind, isEntityOwner };

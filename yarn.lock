@@ -2495,7 +2495,7 @@
     remark-gfm "^1.0.0"
     zen-observable "^0.8.15"
 
-"@backstage/plugin-auth-backend@^0.3.19", "@backstage/plugin-auth-backend@^0.3.20":
+"@backstage/plugin-auth-backend@^0.3.19":
   version "0.3.24"
   resolved "https://registry.npmjs.org/@backstage/plugin-auth-backend/-/plugin-auth-backend-0.3.24.tgz#c4d86330e71cdcf29b8263c97b79ebf2eeba8c9e"
   integrity sha512-kr7Y4niTZSGpV3EcFxCFQYh+ogpzpRRgburzDgarXBQX+J121cJm9Gjz5XjuLObe7BwaNYDY2EVOXntz3ZxLiQ==

@@ -20,6 +20,7 @@ import {
   UserEntity,
 } from '@backstage/catalog-model';
 import { TokenParams } from '../../identity';
+import { BackstageIdentity } from '../../providers/types';
 
 export function getEntityClaims(entity: UserEntity): TokenParams['claims'] {
   const userRef = stringifyEntityRef(entity);
@@ -37,4 +38,10 @@ export function getEntityClaims(entity: UserEntity): TokenParams['claims'] {
     sub: userRef,
     ent: [userRef, ...membershipRefs],
   };
+}
+
+// TODO(authorization-framework): This should return identity.id parsed into an entity name + ent
+// claims from the token.
+export function getIdentityClaims(_identity: BackstageIdentity): string[] {
+  return [];
 }
