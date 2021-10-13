@@ -124,7 +124,7 @@ const handleRequest = async (
     return {
       id,
       result: AuthorizeResult.MAYBE,
-      filters: response.filterDefinition.filters,
+      conditions: response.filterDefinition.filters,
     };
   }
 
