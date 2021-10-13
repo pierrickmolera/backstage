@@ -44,14 +44,3 @@ export const createPermissions = <T extends string>(
     },
   };
 };
-
-export type FilterDefinition = {
-  rule: string;
-  params?: object;
-};
-
-export type FilterResolver<TResource, TFilter, TParams extends any[] = []> = {
-  name: string;
-  apply: (resource: TResource, ...params: TParams) => boolean;
-  serialize: (...params: TParams) => TFilter;
-};

@@ -15,47 +15,32 @@
  */
 import {
   Entity,
-  EntityRelation,
   RELATION_OWNED_BY,
   stringifyEntityRef,
 } from '@backstage/catalog-model';
-import {
-  FilterResolver,
-  PermissionCondition,
-  PermissionRule,
-} from '@backstage/permission-common';
+import { createPermissionRule } from '@backstage/permission-common';
 import { EntitiesSearchFilter } from '../../catalog/types';
 
-export const isEntityOwnerRule: PermissionRule = {
+export const isEntityOwnerRule = createPermissionRule<
+  Entity,
+  string[],
+  EntitiesSearchFilter
+>({
   name: 'IS_ENTITY_OWNER',
   description: 'Allow entities owned by the current user',
-};
-
-export function isEntityOwner(claims: string[]): PermissionCondition {
-  return {
-    rule: isEntityOwnerRule.name,
-    params: claims,
-  };
-}
-
-export const isEntityOwnerMatcher: FilterResolver<
-  Entity,
-  EntitiesSearchFilter,
-  [string[]]
-> = {
-  name: 'IS_ENTITY_OWNER',
-  apply: (resource: Entity, claims: string[]): boolean => {
+  apply: (resource, claims) => {
     if (!resource.relations) {
       return false;
     }
 
     return resource.relations
-      .filter((relation: EntityRelation) => relation.type === RELATION_OWNED_BY)
+      .filter(relation => relation.type === RELATION_OWNED_BY)
       .some(relation => claims.includes(stringifyEntityRef(relation.target)));
   },
-
-  serialize: (claims: string[]) => ({
+  toQuery: claims => ({
     key: 'spec.owner',
     matchValueIn: claims,
   }),
-};
+});
+
+export const isEntityOwner = isEntityOwnerRule.bind;

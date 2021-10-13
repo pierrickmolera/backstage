@@ -20,40 +20,24 @@ import {
   parseEntityRef,
   RESOURCE_TYPE_CATALOG_ENTITY,
 } from '@backstage/catalog-model';
-import {
-  hasAnnotation,
-  hasAnnotationMatcher,
-  hasAnnotationRule,
-} from './hasAnnotation';
-import {
-  isEntityKind,
-  isEntityKindMatcher,
-  isEntityKindRule,
-} from './isEntityKind';
-import {
-  isEntityOwner,
-  isEntityOwnerMatcher,
-  isEntityOwnerRule,
-} from './isEntityOwner';
-import { EntitiesCatalog, EntitiesSearchFilter } from '../../catalog/types';
+import { hasAnnotationRule } from './hasAnnotation';
+import { isEntityKindRule } from './isEntityKind';
+import { isEntityOwnerRule } from './isEntityOwner';
+import { EntitiesCatalog } from '../../catalog/types';
 import { basicEntityFilter } from '../../service/request';
+import {
+  PermissionCondition,
+  PermissionRules,
+} from '@backstage/permission-common';
+import { Filters } from '@backstage/backend-common';
 
-// TODO(authorization-framework): Feels a bit dirty... but at least this is next to where the
-// permissions are exported
-export const PermissionLookup = {
-  [hasAnnotationRule.name]: hasAnnotationMatcher,
-  [isEntityKindRule.name]: isEntityKindMatcher,
-  [isEntityOwnerRule.name]: isEntityOwnerMatcher,
-};
-
-export const PermissionConditions = {
-  hasAnnotation,
-  isEntityKind,
-  isEntityOwner,
-};
+export const catalogPermissionRules = new PermissionRules({
+  // TODO(authorization-framework): fix type of condition params. might need to rely on unknown/any at the framework level
+  rules: [isEntityOwnerRule, isEntityKindRule, hasAnnotationRule],
+});
 
 export class CatalogEntityFilterResolverConfig
-  implements ResourceFilterResolverConfig<Entity, EntitiesSearchFilter>
+  implements ResourceFilterResolverConfig<Entity>
 {
   constructor(private readonly entitiesCatalog: EntitiesCatalog) {}
 
@@ -61,8 +45,8 @@ export class CatalogEntityFilterResolverConfig
     return RESOURCE_TYPE_CATALOG_ENTITY;
   }
 
-  getResolvers() {
-    return [hasAnnotationMatcher, isEntityKindMatcher, isEntityOwnerMatcher];
+  apply(resource: Entity, filters: Filters<PermissionCondition<any>>) {
+    return catalogPermissionRules.apply(resource, filters);
   }
 
   async getResource(resourceRef: string) {

@@ -16,16 +16,6 @@
 
 import { CRUDAction, PermissionAttributes } from './attributes';
 
-export type PermissionRule = {
-  name: string;
-  description: string;
-};
-
-export type PermissionCondition = {
-  rule: string;
-  params: string | string[];
-};
-
 export type PermissionJSON = {
   name: string;
   attributes: PermissionAttributes;

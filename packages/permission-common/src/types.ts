@@ -15,8 +15,7 @@
  */
 
 import { Filters } from '@backstage/backend-common';
-import { JsonValue } from '@backstage/config';
-import { Permission, PermissionJSON } from './permissions';
+import { Permission, PermissionCondition, PermissionJSON } from './permissions';
 
 export type Identified<T> = T & { id: string };
 
@@ -46,11 +45,12 @@ export type DefinitiveAuthorizeResult = {
   result: AuthorizeResult.ALLOW | AuthorizeResult.DENY;
 };
 
-export type ConditionalAuthorizeResult<T> = {
+export type ConditionalAuthorizeResult = {
   result: AuthorizeResult.MAYBE;
-  conditions: Filters<T>;
+  // TODO(authorization-framework): should we use a concrete type instead of any?
+  conditions: Filters<PermissionCondition<any>>;
 };
 
-export type AuthorizeResponse<TFilter extends JsonValue = JsonValue> =
+export type AuthorizeResponse =
   | DefinitiveAuthorizeResult
-  | ConditionalAuthorizeResult<TFilter>;
+  | ConditionalAuthorizeResult;

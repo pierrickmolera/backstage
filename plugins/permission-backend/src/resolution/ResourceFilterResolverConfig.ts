@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-import { FilterResolver } from '@backstage/permission-common';
+import { Filters } from '@backstage/backend-common';
+import { PermissionCondition } from '@backstage/permission-common';
 
-export interface ResourceFilterResolverConfig<TResource, TFilter> {
-  getResolvers(): FilterResolver<TResource, TFilter, any>[];
+export interface ResourceFilterResolverConfig<TResource> {
+  apply(
+    resource: TResource,
+    filters: Filters<PermissionCondition<unknown>>,
+  ): boolean;
   getResourceType(): string;
   getResource(resourceRef: string): Promise<TResource | undefined>;
 }

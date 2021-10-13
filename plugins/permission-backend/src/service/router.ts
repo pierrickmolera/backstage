@@ -18,7 +18,6 @@ import {
   errorHandler,
   SingleHostDiscovery,
   PluginEndpointDiscovery,
-  Filters,
 } from '@backstage/backend-common';
 import fetch from 'cross-fetch';
 import express, { Request, Response } from 'express';
@@ -53,7 +52,7 @@ const applyFilters = async (
   filterDefinition: ResourceFilters,
   discoveryApi: PluginEndpointDiscovery,
   authHeader?: string,
-): Promise<Filters<boolean>> => {
+): Promise<boolean> => {
   const endpoint = `${await discoveryApi.getBaseUrl(
     filterDefinition.getPluginId(),
   )}/permissions/resolve-filters`;
@@ -108,14 +107,12 @@ const handleRequest = async (
     if (resourceRef) {
       return {
         id,
-        result: (
-          await applyFilters(
-            resourceRef,
-            response.filterDefinition,
-            discoveryApi,
-            authHeader,
-          )
-        ).anyOf.some(({ allOf }) => allOf.every(val => val))
+        result: (await applyFilters(
+          resourceRef,
+          response.filterDefinition,
+          discoveryApi,
+          authHeader,
+        ))
           ? AuthorizeResult.ALLOW
           : AuthorizeResult.DENY,
       };

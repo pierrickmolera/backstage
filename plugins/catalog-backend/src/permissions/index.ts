@@ -14,6 +14,5 @@
  * limitations under the License.
  */
 
-export { PermissionConditions } from './rules';
 export { CatalogEntityFilters } from './filterDefinition';
 export { CatalogEntityFilterResolverConfig } from './rules';

@@ -18,21 +18,21 @@ import Router from 'express-promise-router';
 import express from 'express';
 import { Filters } from '@backstage/backend-common';
 import { ResourceFilterResolverConfig } from './ResourceFilterResolverConfig';
-import { FilterDefinition } from '@backstage/permission-common';
+import { PermissionCondition } from '@backstage/permission-common';
 
-type RouterOptions<TResource, TFilter> = {
-  filterResolverConfig: ResourceFilterResolverConfig<TResource, TFilter>;
+type RouterOptions<TResource> = {
+  filterResolverConfig: ResourceFilterResolverConfig<TResource>;
 };
 
 type ApplyRequestBody = {
   resourceRef: string;
   resourceType: string;
-  filters: Filters<FilterDefinition>;
+  filters: Filters<PermissionCondition<unknown>>;
 };
 
-export const filterResolutionRouter = async <TResource, TFilter>({
+export const filterResolutionRouter = async <TResource>({
   filterResolverConfig,
-}: RouterOptions<TResource, TFilter>): Promise<express.Router> => {
+}: RouterOptions<TResource>): Promise<express.Router> => {
   const router = Router();
 
   router.use('/permissions/', express.json());
@@ -49,19 +49,9 @@ export const filterResolutionRouter = async <TResource, TFilter>({
       return res.status(400).end();
     }
 
-    return res.status(200).json({
-      anyOf: body.filters.anyOf.map(({ allOf }) => ({
-        allOf: allOf.map(filterRequest =>
-          filterResolverConfig
-            .getResolvers()
-            // TODO(authorization-framework) note exclamation
-            // below - need to handle the case where a resolver
-            // isn't found.
-            .find(({ name }) => name === filterRequest.rule)!
-            .apply(resource, filterRequest.params),
-        ),
-      })),
-    });
+    const allowed = filterResolverConfig.apply(resource, body.filters);
+
+    return res.status(200).json({ allowed });
   });
 
   return router;
