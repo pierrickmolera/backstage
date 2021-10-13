@@ -97,6 +97,9 @@ function parseFiltersToDbQuery(filters: EntityFilter, db: Knex) {
             .where(function keyFilter() {
               this.andWhere({ key: key.toLowerCase() });
               if (matchValueExists !== false && matchValueIn) {
+                // TODO(authorization-framework) open issue - when matchValueIn
+                // has length 0, the filter should result in no values being returned,
+                // instead the filter ends up being a no-op.
                 if (matchValueIn.length === 1) {
                   this.andWhere({ value: matchValueIn[0].toLowerCase() });
                 } else if (matchValueIn.length > 1) {
