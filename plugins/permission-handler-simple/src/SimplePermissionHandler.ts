@@ -33,7 +33,7 @@ import {
 } from '@backstage/plugin-catalog-backend';
 import { RESOURCE_TYPE_CATALOG_ENTITY } from '@backstage/catalog-model';
 
-const { isEntityKind, isEntityOwner, hasAnnotation } = PermissionConditions;
+const { isEntityKind, isEntityOwner } = PermissionConditions;
 
 export class SimplePermissionHandler implements PermissionHandler {
   async handle(
@@ -58,10 +58,7 @@ export class SimplePermissionHandler implements PermissionHandler {
         filterDefinition: new CatalogEntityFilters({
           anyOf: [
             {
-              allOf: [
-                isEntityOwner(getIdentityClaims(identity)),
-                hasAnnotation('backstage.io/view-url'),
-              ],
+              allOf: [isEntityOwner(getIdentityClaims(identity))],
             },
             {
               allOf: isEntityKind(['template']),
