@@ -28,7 +28,7 @@
     "clean": "backstage-cli clean"
   },
   "dependencies": {
-    "@backstage/backend-common": "^0.8.8",
+    "@backstage/backend-common": "^0.9.6",
     "@backstage/config": "^0.1.6",
     "@backstage/errors": "^0.1.2",
     "@backstage/permission-common": "^0.1.0",
