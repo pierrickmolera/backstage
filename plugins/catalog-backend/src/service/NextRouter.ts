@@ -82,7 +82,6 @@ export async function createNextRouter(
     router
       .use(
         await filterResolutionRouter({
-          config,
           filterResolverConfig: new CatalogEntityFilterResolverConfig(
             entitiesCatalog,
           ),

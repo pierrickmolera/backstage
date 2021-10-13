@@ -62,7 +62,7 @@ export class CatalogEntityFilterResolverConfig
   }
 
   getResolvers() {
-    return [hasAnnotation, isEntityKind, isEntityOwner];
+    return [hasAnnotationMatcher, isEntityKindMatcher, isEntityOwnerMatcher];
   }
 
   async getResource(resourceRef: string) {

@@ -15,5 +15,5 @@
  */
 
 export { filterResolutionRouter } from './filterResolutionRouter';
-export type { ResourceFilterResolverConfig } from './ResourceFilterResolvers';
+export type { ResourceFilterResolverConfig } from './ResourceFilterResolverConfig';
 export { ResourceFilters } from './ResourceFilters';

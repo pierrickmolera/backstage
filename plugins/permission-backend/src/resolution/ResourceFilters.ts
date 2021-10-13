@@ -15,10 +15,10 @@
  */
 
 import { Filters } from '@backstage/backend-common';
-import { FilterDefinition } from '@backstage/permission-common';
+import { PermissionCondition } from '@backstage/permission-common';
 
 export abstract class ResourceFilters {
-  constructor(public filters: Filters<FilterDefinition>) {}
+  constructor(public filters: Filters<PermissionCondition>) {}
 
   abstract getResourceType(): string;
 

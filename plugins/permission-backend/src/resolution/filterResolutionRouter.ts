@@ -16,14 +16,11 @@
 
 import Router from 'express-promise-router';
 import express from 'express';
-import { Config } from '@backstage/config';
-import { Filters, SingleHostDiscovery } from '@backstage/backend-common';
-import { IdentityClient } from '@backstage/plugin-auth-backend';
-import { ResourceFilterResolverConfig } from './ResourceFilterResolvers';
+import { Filters } from '@backstage/backend-common';
+import { ResourceFilterResolverConfig } from './ResourceFilterResolverConfig';
 import { FilterDefinition } from '@backstage/permission-common';
 
 type RouterOptions<TResource, TFilter> = {
-  config: Config;
   filterResolverConfig: ResourceFilterResolverConfig<TResource, TFilter>;
 };
 
@@ -34,24 +31,14 @@ type ApplyRequestBody = {
 };
 
 export const filterResolutionRouter = async <TResource, TFilter>({
-  config,
   filterResolverConfig,
 }: RouterOptions<TResource, TFilter>): Promise<express.Router> => {
-  const discovery = SingleHostDiscovery.fromConfig(config);
-  const identity = new IdentityClient({
-    discovery,
-    issuer: await discovery.getExternalBaseUrl('auth'),
-  });
-
   const router = Router();
 
   router.use('/permissions/', express.json());
 
   router.post('/permissions/resolve-filters', async (req, res) => {
     const body = req.body as ApplyRequestBody;
-
-    const token = IdentityClient.getBearerToken(req.header('authorization'));
-    const user = token ? await identity.authenticate(token) : undefined;
 
     // TODO(authorization-framework): validate input, inc. that resource type
     // matches expected value.
@@ -70,8 +57,8 @@ export const filterResolutionRouter = async <TResource, TFilter>({
             // TODO(authorization-framework) note exclamation
             // below - need to handle the case where a resolver
             // isn't found.
-            .find(({ name }) => name === filterRequest.name)!
-            .apply(user, resource, filterRequest.params),
+            .find(({ name }) => name === filterRequest.rule)!
+            .apply(resource, filterRequest.params),
         ),
       })),
     });

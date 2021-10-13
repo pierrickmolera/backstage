@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 import { Permission, PermissionJSON } from './permission';
 
 type PermissionMethods<T extends string> = {
@@ -47,23 +46,12 @@ export const createPermissions = <T extends string>(
 };
 
 export type FilterDefinition = {
-  name: string;
+  rule: string;
   params?: object;
 };
 
 export type FilterResolver<TResource, TFilter, TParams extends any[] = []> = {
   name: string;
-  description: string;
-  // TODO(authorization-framework): more restrictive
-  // type for params: JSONSchema?
-  params: Record<number, object>;
-  apply: (
-    identity: BackstageIdentity | undefined,
-    resource: TResource,
-    params: TParams,
-  ) => boolean;
-  serialize: (
-    identity: BackstageIdentity | undefined,
-    params: TParams,
-  ) => TFilter;
+  apply: (resource: TResource, ...params: TParams) => boolean;
+  serialize: (...params: TParams) => TFilter;
 };

@@ -15,10 +15,11 @@
  */
 import { Entity } from '@backstage/catalog-model';
 import {
+  FilterResolver,
   PermissionCondition,
   PermissionRule,
 } from '@backstage/permission-common';
-import { CatalogPermissionMatcher } from './types';
+import { EntitiesSearchFilter } from '../../catalog/types';
 
 export const isEntityKindRule: PermissionRule = {
   name: 'IS_ENTITY_KIND',
@@ -32,7 +33,12 @@ export function isEntityKind(kinds: string[]): PermissionCondition {
   };
 }
 
-export const isEntityKindMatcher: CatalogPermissionMatcher<string[]> = {
+export const isEntityKindMatcher: FilterResolver<
+  Entity,
+  EntitiesSearchFilter,
+  [string[]]
+> = {
+  name: 'IS_ENTITY_KIND',
   apply: (resource: Entity, kinds: string[]) => {
     return kinds
       .map(kind => kind.toLocaleLowerCase('en-US'))

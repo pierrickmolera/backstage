@@ -20,10 +20,11 @@ import {
   stringifyEntityRef,
 } from '@backstage/catalog-model';
 import {
+  FilterResolver,
   PermissionCondition,
   PermissionRule,
 } from '@backstage/permission-common';
-import { CatalogPermissionMatcher } from './types';
+import { EntitiesSearchFilter } from '../../catalog/types';
 
 export const isEntityOwnerRule: PermissionRule = {
   name: 'IS_ENTITY_OWNER',
@@ -37,7 +38,12 @@ export function isEntityOwner(claims: string[]): PermissionCondition {
   };
 }
 
-export const isEntityOwnerMatcher: CatalogPermissionMatcher<string[]> = {
+export const isEntityOwnerMatcher: FilterResolver<
+  Entity,
+  EntitiesSearchFilter,
+  [string[]]
+> = {
+  name: 'IS_ENTITY_OWNER',
   apply: (resource: Entity, claims: string[]): boolean => {
     if (!resource.relations) {
       return false;

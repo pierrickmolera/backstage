@@ -15,10 +15,11 @@
  */
 import { Entity } from '@backstage/catalog-model';
 import {
+  FilterResolver,
   PermissionCondition,
   PermissionRule,
 } from '@backstage/permission-common';
-import { CatalogPermissionMatcher } from './types';
+import { EntitiesSearchFilter } from '../../catalog/types';
 
 export const hasAnnotationRule: PermissionRule = {
   name: 'HAS_ANNOTATION',
@@ -33,7 +34,12 @@ export function hasAnnotation(annotation: string): PermissionCondition {
   };
 }
 
-export const hasAnnotationMatcher: CatalogPermissionMatcher<string> = {
+export const hasAnnotationMatcher: FilterResolver<
+  Entity,
+  EntitiesSearchFilter,
+  [string]
+> = {
+  name: 'HAS_ANNOTATION',
   apply: (resource: Entity, annotation: string) =>
     !!resource.metadata.annotations?.hasOwnProperty(annotation[0]),
 
