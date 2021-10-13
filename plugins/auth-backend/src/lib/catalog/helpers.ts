@@ -15,6 +15,7 @@
  */
 
 import {
+  parseEntityRef,
   RELATION_MEMBER_OF,
   stringifyEntityRef,
   UserEntity,
@@ -42,6 +43,13 @@ export function getEntityClaims(entity: UserEntity): TokenParams['claims'] {
 
 // TODO(authorization-framework): This should return identity.id parsed into an entity name + ent
 // claims from the token.
-export function getIdentityClaims(_identity: BackstageIdentity): string[] {
-  return [];
+export function getIdentityClaims(identity: BackstageIdentity): string[] {
+  return [
+    stringifyEntityRef(
+      parseEntityRef(identity.id ?? '', {
+        defaultKind: 'user',
+        defaultNamespace: 'default',
+      }),
+    ),
+  ];
 }
