@@ -39,11 +39,11 @@ type Conditions<TRules extends Record<string, PermissionRule<any, any>>> = {
   [Name in keyof TRules]: Condition<TRules[Name]>;
 };
 
-type FilterType<TRules> = TRules extends Record<
+type QueryType<TRules> = TRules extends Record<
   string,
-  PermissionRule<any, infer TFilter, any>
+  PermissionRule<any, infer TQuery, any>
 >
-  ? TFilter
+  ? TQuery
   : never;
 
 export const createPermissionIntegration = <
@@ -65,9 +65,9 @@ export const createPermissionIntegration = <
   ) => Promise<TResource | undefined>;
 }): {
   createPermissionIntegrationRouter: (...params: TGetResourceParams) => Router;
-  toFilters: (
+  toQuery: (
     conditions: Filters<PermissionCondition>,
-  ) => Filters<FilterType<TRules>>;
+  ) => Filters<QueryType<TRules>>;
   conditions: Conditions<TRules>;
   createConditions: (conditions: Filters<PermissionCondition>) => {
     pluginId: string;
@@ -77,7 +77,7 @@ export const createPermissionIntegration = <
 } => {
   const getRule = (
     name: string,
-  ): PermissionRule<TResource, FilterType<TRules>> => {
+  ): PermissionRule<TResource, QueryType<TRules>> => {
     const rule = Object.values(rules).find(r => r.name === name);
 
     if (!rule) {
@@ -126,9 +126,9 @@ export const createPermissionIntegration = <
 
       return router;
     },
-    toFilters: (
+    toQuery: (
       conditions: Filters<PermissionCondition>,
-    ): Filters<FilterType<TRules>> => ({
+    ): Filters<QueryType<TRules>> => ({
       anyOf: conditions.anyOf.map(({ allOf }) => ({
         allOf: allOf.map(({ rule, params }) =>
           getRule(rule).toQuery(...params),

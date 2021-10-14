@@ -33,7 +33,7 @@ import {
   EntityFilter,
   EntityPagination,
 } from '../catalog/types';
-import { toFilters } from '../permissions';
+import { toQuery } from '../permissions';
 import {
   DbFinalEntitiesRow,
   DbRefreshStateReferencesRow,
@@ -159,7 +159,7 @@ export class NextEntitiesCatalog implements EntitiesCatalog {
         };
       } else if (authorizeResponse.result === AuthorizeResult.MAYBE) {
         entitiesQuery = entitiesQuery.andWhere(
-          parseFiltersToDbQuery(toFilters(authorizeResponse.conditions), db),
+          parseFiltersToDbQuery(toQuery(authorizeResponse.conditions), db),
         );
       }
     }

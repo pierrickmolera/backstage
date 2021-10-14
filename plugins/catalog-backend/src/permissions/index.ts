@@ -48,7 +48,7 @@ export const {
   createPermissionIntegrationRouter,
   conditions,
   createConditions,
-  toFilters,
+  toQuery,
 } = createPermissionIntegration({
   pluginId: 'catalog',
   resourceType: 'catalog-entity',

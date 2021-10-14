@@ -19,9 +19,9 @@ export type PermissionCondition<TParams extends any[] = any> = {
   params: TParams;
 };
 
-export type PermissionRule<Resource, Query, Params extends any[] = any> = {
+export type PermissionRule<TResource, TQuery, TParams extends any[] = any> = {
   name: string;
   description: string;
-  apply(resource: Resource, ...params: Params): boolean;
-  toQuery(...params: Params): Query;
+  apply(resource: TResource, ...params: TParams): boolean;
+  toQuery(...params: TParams): TQuery;
 };
