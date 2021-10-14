@@ -19,12 +19,16 @@ import {
   PermissionCondition,
   PermissionRule,
 } from '@backstage/permission-common';
-import express, { Router } from 'express';
+import express, { Response, Router } from 'express';
 
-type ApplyRequest = {
+export type ApplyConditionsRequest = {
   resourceRef: string;
   resourceType: string;
-  filters: Filters<PermissionCondition<unknown[]>>;
+  conditions: Filters<PermissionCondition<unknown[]>>;
+};
+
+export type ApplyConditionsResponse = {
+  allowed: boolean;
 };
 
 type Condition<TRule> = TRule extends PermissionRule<any, any, infer TParams>
@@ -91,31 +95,34 @@ export const createPermissionIntegration = <
 
       router.use('/permissions/', express.json());
 
-      router.post('/permissions/apply-conditions', async (req, res) => {
-        // TODO(authorization-framework): validate input
-        const body = req.body as ApplyRequest;
+      router.post(
+        '/permissions/apply-conditions',
+        async (req, res: Response<ApplyConditionsResponse>) => {
+          // TODO(authorization-framework): validate input
+          const body = req.body as ApplyConditionsRequest;
 
-        if (body.resourceType !== resourceType) {
-          throw new Error(`Unexpected resource type: ${body.resourceType}`);
-        }
+          if (body.resourceType !== resourceType) {
+            throw new Error(`Unexpected resource type: ${body.resourceType}`);
+          }
 
-        const resource = await getResource(
-          body.resourceRef,
-          ...getResourceParams,
-        );
+          const resource = await getResource(
+            body.resourceRef,
+            ...getResourceParams,
+          );
 
-        if (!resource) {
-          return res.status(400).end();
-        }
+          if (!resource) {
+            return res.status(400).end();
+          }
 
-        const allowed = body.filters.anyOf.some(({ allOf }) =>
-          allOf.every(({ rule, params }) =>
-            getRule(rule).apply(resource, ...params),
-          ),
-        );
+          const allowed = body.conditions.anyOf.some(({ allOf }) =>
+            allOf.every(({ rule, params }) =>
+              getRule(rule).apply(resource, ...params),
+            ),
+          );
 
-        return res.status(200).json(allowed);
-      });
+          return res.status(200).json({ allowed });
+        },
+      );
 
       return router;
     },

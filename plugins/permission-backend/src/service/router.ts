@@ -40,6 +40,10 @@ import {
   PermissionCondition,
 } from '@backstage/permission-common';
 import { PermissionHandler } from '../handler';
+import {
+  ApplyConditionsRequest,
+  ApplyConditionsResponse,
+} from '../integration';
 
 export interface RouterOptions {
   logger: Logger;
@@ -62,13 +66,15 @@ const applyFilters = async (
     conditions.pluginId,
   )}/permissions/apply-conditions`;
 
+  const request: ApplyConditionsRequest = {
+    resourceRef,
+    resourceType: conditions.resourceType,
+    conditions: conditions.conditions,
+  };
+
   const response = await fetch(endpoint, {
     method: 'POST',
-    body: JSON.stringify({
-      resourceRef,
-      resourceType: conditions.resourceType,
-      filters: conditions.conditions,
-    }),
+    body: JSON.stringify(request),
     headers: {
       ...(authHeader ? { authorization: authHeader } : {}),
       'content-type': 'application/json',
@@ -80,7 +86,9 @@ const applyFilters = async (
   }
 
   // TODO(authorization-framework) validate response
-  return response.json();
+  const { allowed } = (await response.json()) as ApplyConditionsResponse;
+
+  return allowed;
 };
 
 const handleRequest = async (

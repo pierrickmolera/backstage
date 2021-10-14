@@ -15,3 +15,7 @@
  */
 
 export { createPermissionIntegration } from './createPermissionIntegration';
+export type {
+  ApplyConditionsRequest,
+  ApplyConditionsResponse,
+} from './createPermissionIntegration';
