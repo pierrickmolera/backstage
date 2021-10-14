@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+export { conditionFor } from './conditionFor';
 export { createPermissionIntegration } from './createPermissionIntegration';
+
 export type {
   ApplyConditionsRequest,
   ApplyConditionsResponse,
-  Conditions,
 } from './createPermissionIntegration';

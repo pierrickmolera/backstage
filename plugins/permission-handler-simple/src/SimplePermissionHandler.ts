@@ -24,6 +24,7 @@ import {
   TechDocsPermission,
 } from '@backstage/permission-common';
 import {
+  conditionFor,
   HandlerResult,
   PermissionHandler,
 } from '@backstage/plugin-permission-backend';
@@ -32,8 +33,10 @@ import {
   createConditions as createCatalogConditions,
 } from '@backstage/plugin-catalog-backend';
 import { RESOURCE_TYPE_CATALOG_ENTITY } from '@backstage/catalog-model';
+import { isComponentType as isComponentTypeRule } from './rules';
 
 const { isEntityOwner, isEntityKind } = catalogConditions;
+const isComponentType = conditionFor(isComponentTypeRule);
 
 export class SimplePermissionHandler implements PermissionHandler {
   async handle(
@@ -60,6 +63,9 @@ export class SimplePermissionHandler implements PermissionHandler {
             anyOf: [
               {
                 allOf: [isEntityOwner(getIdentityClaims(identity))],
+              },
+              {
+                allOf: [isComponentType(['website'])],
               },
               {
                 allOf: [isEntityKind(['template'])],

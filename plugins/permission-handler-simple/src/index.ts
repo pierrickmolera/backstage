@@ -15,3 +15,4 @@
  */
 
 export { SimplePermissionHandler } from './SimplePermissionHandler';
+export { isComponentType } from './rules';

@@ -20,6 +20,7 @@ import {
   PermissionRule,
 } from '@backstage/permission-common';
 import express, { Response, Router } from 'express';
+import { conditionFor } from './conditionFor';
 
 export type ApplyConditionsRequest = {
   resourceRef: string;
@@ -35,11 +36,7 @@ type Condition<TRule> = TRule extends PermissionRule<any, any, infer TParams>
   ? (...params: TParams) => PermissionCondition<TParams>
   : never;
 
-// TODO: THIS IS NOT GREAT
-// Ideally do not want to export this type
-export type Conditions<
-  TRules extends Record<string, PermissionRule<any, any>>,
-> = {
+type Conditions<TRules extends Record<string, PermissionRule<any, any>>> = {
   [Name in keyof TRules]: Condition<TRules[Name]>;
 };
 
@@ -78,11 +75,9 @@ export const createPermissionIntegration = <
     resourceType: string;
     conditions: Filters<PermissionCondition>;
   };
-  extendRulesWith: <
-    TExtensionRules extends { [key: string]: PermissionRule<TResource, any> },
-  >(
-    rules: TExtensionRules,
-  ) => Conditions<TExtensionRules>;
+  registerPermissionRule: (
+    rule: PermissionRule<TResource, QueryType<TRules>>,
+  ) => void;
 } => {
   const rulesMap = new Map(Object.values(rules).map(rule => [rule.name, rule]));
 
@@ -149,10 +144,7 @@ export const createPermissionIntegration = <
     conditions: Object.entries(rules).reduce(
       (acc, [key, rule]) => ({
         ...acc,
-        [key]: (...params) => ({
-          rule: rule.name,
-          params,
-        }),
+        [key]: conditionFor(rule),
       }),
       {} as Conditions<TRules>,
     ),
@@ -161,21 +153,8 @@ export const createPermissionIntegration = <
       resourceType,
       conditions,
     }),
-    extendRulesWith: extensionRules => {
-      Object.values(extensionRules).forEach(rule =>
-        rulesMap.set(rule.name, rule),
-      );
-      // TODO: This was copy pasted from conditions, refactor to be able to reuse logic
-      return Object.entries(extensionRules).reduce(
-        (acc, [key, rule]) => ({
-          ...acc,
-          [key]: (...params) => ({
-            rule: rule.name,
-            params,
-          }),
-        }),
-        {} as Conditions<typeof extensionRules>,
-      );
+    registerPermissionRule: rule => {
+      rulesMap.set(rule.name, rule);
     },
   };
 };

@@ -52,7 +52,7 @@ export const {
   conditions,
   createConditions,
   toQuery,
-  extendRulesWith,
+  registerPermissionRule,
 } = createPermissionIntegration({
   pluginId: 'catalog',
   resourceType: 'catalog-entity',
