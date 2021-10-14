@@ -52,7 +52,7 @@ export interface RouterOptions {
 }
 
 // TODO(authorization-framework) probably move this to a separate client
-const applyFilters = async (
+const applyConditions = async (
   resourceRef: string,
   conditions: {
     pluginId: string;
@@ -116,7 +116,7 @@ const handleRequest = async (
     if (resourceRef) {
       return {
         id,
-        result: (await applyFilters(
+        result: (await applyConditions(
           resourceRef,
           response.conditions,
           discoveryApi,
