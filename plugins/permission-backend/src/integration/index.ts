@@ -14,15 +14,4 @@
  * limitations under the License.
  */
 
-import { RESOURCE_TYPE_CATALOG_ENTITY } from '@backstage/catalog-model';
-import { ResourceFilters } from '@backstage/plugin-permission-backend';
-
-export class CatalogEntityFilters extends ResourceFilters {
-  getResourceType() {
-    return RESOURCE_TYPE_CATALOG_ENTITY;
-  }
-
-  getPluginId() {
-    return 'catalog';
-  }
-}
+export { createPermissionIntegration } from './createPermissionIntegration';

@@ -25,7 +25,8 @@ export * from './ingestion';
 export * from './legacy';
 export * from './search';
 export * from './util';
-export * from './permissions';
 export * from './processing';
 export * from './providers';
 export * from './service';
+
+export { conditions, createConditions } from './permissions';

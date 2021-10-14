@@ -13,22 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   Entity,
   RELATION_OWNED_BY,
   stringifyEntityRef,
 } from '@backstage/catalog-model';
-import { createPermissionRule } from '@backstage/permission-common';
 import { EntitiesSearchFilter } from '../../catalog/types';
 
-export const isEntityOwnerRule = createPermissionRule<
-  Entity,
-  string[],
-  EntitiesSearchFilter
->({
+export const isEntityOwner = {
   name: 'IS_ENTITY_OWNER',
   description: 'Allow entities owned by the current user',
-  apply: (resource, claims) => {
+  apply: (resource: Entity, claims: string[]) => {
     if (!resource.relations) {
       return false;
     }
@@ -37,10 +33,8 @@ export const isEntityOwnerRule = createPermissionRule<
       .filter(relation => relation.type === RELATION_OWNED_BY)
       .some(relation => claims.includes(stringifyEntityRef(relation.target)));
   },
-  toQuery: claims => ({
+  toQuery: (claims: string[]): EntitiesSearchFilter => ({
     key: 'spec.owner',
     matchValueIn: claims,
   }),
-});
-
-export const isEntityOwner = isEntityOwnerRule.bind;
+};

@@ -13,24 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { Entity } from '@backstage/catalog-model';
-import { createPermissionRule } from '@backstage/permission-common';
 import { EntitiesSearchFilter } from '../../catalog/types';
 
-export const hasAnnotationRule = createPermissionRule<
-  Entity,
-  string,
-  EntitiesSearchFilter
->({
+export const hasAnnotation = {
   name: 'HAS_ANNOTATION',
   description:
     'Allow entities which are annotated with the specified annotation',
   apply: (resource: Entity, annotation: string) =>
     !!resource.metadata.annotations?.hasOwnProperty(annotation[0]),
-  toQuery: (annotation: string) => ({
+  toQuery: (annotation: string): EntitiesSearchFilter => ({
     key: annotation,
     matchValueExists: true,
   }),
-});
-
-export const hasAnnotation = hasAnnotationRule.bind;
+};

@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
+import { Filters } from '@backstage/backend-common';
 import {
   AuthorizeResult,
   DefinitiveAuthorizeResult,
   OpaqueAuthorizeRequest,
+  PermissionCondition,
 } from '@backstage/permission-common';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
-import { ResourceFilters } from '../resolution';
 
 export type ConditionalHandlerResult = {
   result: AuthorizeResult.MAYBE;
-  filterDefinition: ResourceFilters;
+  conditions: {
+    pluginId: string;
+    resourceType: string;
+    conditions: Filters<PermissionCondition>;
+  };
 };
 
 export type HandlerResult =

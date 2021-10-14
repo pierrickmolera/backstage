@@ -18,6 +18,7 @@ import {
   errorHandler,
   SingleHostDiscovery,
   PluginEndpointDiscovery,
+  Filters,
 } from '@backstage/backend-common';
 import fetch from 'cross-fetch';
 import express, { Request, Response } from 'express';
@@ -36,9 +37,9 @@ import {
   AuthorizeRequest,
   AuthorizeRequestJSON,
   Identified,
+  PermissionCondition,
 } from '@backstage/permission-common';
 import { PermissionHandler } from '../handler';
-import { ResourceFilters } from '..';
 
 export interface RouterOptions {
   logger: Logger;
@@ -49,20 +50,24 @@ export interface RouterOptions {
 // TODO(authorization-framework) probably move this to a separate client
 const applyFilters = async (
   resourceRef: string,
-  filterDefinition: ResourceFilters,
+  conditions: {
+    pluginId: string;
+    resourceType: string;
+    conditions: Filters<PermissionCondition>;
+  },
   discoveryApi: PluginEndpointDiscovery,
   authHeader?: string,
 ): Promise<boolean> => {
   const endpoint = `${await discoveryApi.getBaseUrl(
-    filterDefinition.getPluginId(),
-  )}/permissions/resolve-filters`;
+    conditions.pluginId,
+  )}/permissions/apply-conditions`;
 
   const response = await fetch(endpoint, {
     method: 'POST',
     body: JSON.stringify({
       resourceRef,
-      resourceType: filterDefinition.getResourceType(),
-      filters: filterDefinition.filters,
+      resourceType: conditions.resourceType,
+      filters: conditions.conditions,
     }),
     headers: {
       ...(authHeader ? { authorization: authHeader } : {}),
@@ -89,11 +94,7 @@ const handleRequest = async (
 
   if (response.result === AuthorizeResult.MAYBE) {
     // Sanity check that any resource provided matches the one expected by the permission
-    if (
-      !request.permission.supportsType(
-        response.filterDefinition.getResourceType(),
-      )
-    ) {
+    if (!request.permission.supportsType(response.conditions.resourceType)) {
       throw new ConflictError(
         `Invalid resource conditions returned from permission handler for permission ${request.permission.name}`,
       );
@@ -109,7 +110,7 @@ const handleRequest = async (
         id,
         result: (await applyFilters(
           resourceRef,
-          response.filterDefinition,
+          response.conditions,
           discoveryApi,
           authHeader,
         ))
@@ -121,7 +122,7 @@ const handleRequest = async (
     return {
       id,
       result: AuthorizeResult.MAYBE,
-      conditions: response.filterDefinition.filters,
+      conditions: response.conditions.conditions,
     };
   }
 

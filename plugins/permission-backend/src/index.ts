@@ -16,4 +16,4 @@
 
 export * from './service';
 export * from './handler';
-export * from './resolution';
+export * from './integration';

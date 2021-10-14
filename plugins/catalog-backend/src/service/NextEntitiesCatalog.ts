@@ -33,7 +33,7 @@ import {
   EntityFilter,
   EntityPagination,
 } from '../catalog/types';
-import { catalogPermissionRules } from '../permissions/rules';
+import { toFilters } from '../permissions';
 import {
   DbFinalEntitiesRow,
   DbRefreshStateReferencesRow,
@@ -158,13 +158,8 @@ export class NextEntitiesCatalog implements EntitiesCatalog {
           pageInfo: { hasNextPage: false },
         };
       } else if (authorizeResponse.result === AuthorizeResult.MAYBE) {
-        // TODO(authorization-framework): explore inferring the type of the filters
-        // object based on the supplied permission.
-        const authorizationFilters = catalogPermissionRules.toFilters(
-          authorizeResponse.conditions,
-        );
         entitiesQuery = entitiesQuery.andWhere(
-          parseFiltersToDbQuery(authorizationFilters, db),
+          parseFiltersToDbQuery(toFilters(authorizeResponse.conditions), db),
         );
       }
     }

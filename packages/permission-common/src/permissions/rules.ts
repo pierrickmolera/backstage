@@ -14,75 +14,14 @@
  * limitations under the License.
  */
 
-import { Filters } from '@backstage/backend-common';
-
-export type PermissionCondition<Params> = {
+export type PermissionCondition<TParams extends any[] = any> = {
   rule: string;
-  params: Params;
+  params: TParams;
 };
 
-export type PermissionRule<Resource, Params, Query> = {
+export type PermissionRule<Resource, Query, Params extends any[] = any> = {
   name: string;
   description: string;
-  apply(resource: Resource, params: Params): boolean;
-  toQuery(params: Params): Query;
-  bind(params: Params): PermissionCondition<Params>;
+  apply(resource: Resource, ...params: Params): boolean;
+  toQuery(...params: Params): Query;
 };
-
-export type PermissionRuleConfig<Resource, Params, Query> = Omit<
-  PermissionRule<Resource, Params, Query>,
-  'bind'
->;
-
-export function createPermissionRule<Resource, Params, Query>(
-  config: PermissionRuleConfig<Resource, Params, Query>,
-): PermissionRule<Resource, Params, Query> {
-  return {
-    ...config,
-    bind(params) {
-      return {
-        rule: config.name,
-        params,
-      };
-    },
-  };
-}
-
-export type PermissionRulesOptions<Resource, Query> = {
-  rules: PermissionRule<Resource, any, Query>[];
-};
-
-export class PermissionRules<Resource, Query> {
-  constructor(
-    private readonly options: PermissionRulesOptions<Resource, Query>,
-  ) {}
-
-  apply(
-    resource: Resource,
-    filters: Filters<PermissionCondition<any>>,
-  ): boolean {
-    return filters.anyOf.some(({ allOf }) =>
-      allOf.every(condition =>
-        this.getRule(condition.rule).apply(resource, condition.params),
-      ),
-    );
-  }
-
-  toFilters(conditions: Filters<PermissionCondition<any>>): Filters<Query> {
-    return {
-      anyOf: conditions.anyOf.map(({ allOf }) => ({
-        allOf: allOf.map(condition =>
-          this.getRule(condition.rule).toQuery(condition.params),
-        ),
-      })),
-    };
-  }
-
-  private getRule(name: string): PermissionRule<Resource, any, Query> {
-    const rule = this.options.rules.find(r => r.name === name);
-    if (!rule) {
-      throw new Error(`Unexpected permission rule: ${name}`);
-    }
-    return rule;
-  }
-}

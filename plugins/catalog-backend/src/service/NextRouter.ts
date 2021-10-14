@@ -23,14 +23,13 @@ import {
 import { Config } from '@backstage/config';
 import { NotFoundError } from '@backstage/errors';
 import { IdentityClient } from '@backstage/plugin-auth-backend';
-import { filterResolutionRouter } from '@backstage/plugin-permission-backend';
 import express from 'express';
 import Router from 'express-promise-router';
 import { Logger } from 'winston';
 import yn from 'yn';
 import { EntitiesCatalog } from '../catalog';
 import { LocationAnalyzer } from '../ingestion/types';
-import { CatalogEntityFilterResolverConfig } from '../permissions';
+import { createPermissionIntegrationRouter } from '../permissions';
 import {
   basicEntityFilter,
   parseEntityFilterParams,
@@ -80,13 +79,7 @@ export async function createNextRouter(
 
   if (entitiesCatalog) {
     router
-      .use(
-        await filterResolutionRouter({
-          filterResolverConfig: new CatalogEntityFilterResolverConfig(
-            entitiesCatalog,
-          ),
-        }),
-      )
+      .use(createPermissionIntegrationRouter(entitiesCatalog))
       .get('/entities', async (req, res) => {
         const { entities, pageInfo } = await entitiesCatalog.entities({
           authorizationToken: IdentityClient.getBearerToken(

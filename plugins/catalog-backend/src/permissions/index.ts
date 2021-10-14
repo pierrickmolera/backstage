@@ -14,5 +14,44 @@
  * limitations under the License.
  */
 
-export { CatalogEntityFilters } from './filterDefinition';
-export { CatalogEntityFilterResolverConfig } from './rules';
+import { createPermissionIntegration } from '@backstage/plugin-permission-backend';
+import { Entity, parseEntityRef } from '@backstage/catalog-model';
+import { EntitiesCatalog } from '../catalog/types';
+import { basicEntityFilter } from '../service/request';
+import { hasAnnotation, isEntityKind, isEntityOwner } from './rules';
+
+const getEntity = async (
+  resourceRef: string,
+  entitiesCatalog: EntitiesCatalog,
+): Promise<Entity | undefined> => {
+  const parsed = parseEntityRef(resourceRef);
+
+  const { entities } = await entitiesCatalog.entities(
+    {
+      filter: basicEntityFilter({
+        kind: parsed.kind,
+        'metadata.namespace': parsed.namespace,
+        'metadata.name': parsed.name,
+      }),
+    },
+    false,
+  );
+
+  if (!entities.length) {
+    return undefined;
+  }
+
+  return entities[0];
+};
+
+export const {
+  createPermissionIntegrationRouter,
+  conditions,
+  createConditions,
+  toFilters,
+} = createPermissionIntegration({
+  pluginId: 'catalog',
+  resourceType: 'catalog-entity',
+  rules: { hasAnnotation, isEntityKind, isEntityOwner },
+  getResource: getEntity,
+});

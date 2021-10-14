@@ -28,12 +28,12 @@ import {
   PermissionHandler,
 } from '@backstage/plugin-permission-backend';
 import {
-  CatalogEntityFilters,
-  PermissionConditions,
+  conditions as catalogConditions,
+  createConditions as createCatalogConditions,
 } from '@backstage/plugin-catalog-backend';
 import { RESOURCE_TYPE_CATALOG_ENTITY } from '@backstage/catalog-model';
 
-const { isEntityKind, isEntityOwner } = PermissionConditions;
+const { isEntityOwner, isEntityKind } = catalogConditions;
 
 export class SimplePermissionHandler implements PermissionHandler {
   async handle(
@@ -55,7 +55,7 @@ export class SimplePermissionHandler implements PermissionHandler {
 
       return {
         result: AuthorizeResult.MAYBE,
-        filterDefinition: new CatalogEntityFilters({
+        conditions: createCatalogConditions({
           anyOf: [
             {
               allOf: [isEntityOwner(getIdentityClaims(identity))],
