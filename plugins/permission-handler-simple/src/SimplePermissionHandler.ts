@@ -53,15 +53,28 @@ export class SimplePermissionHandler implements PermissionHandler {
         };
       }
 
+      if (request.permission.isRead) {
+        return {
+          result: AuthorizeResult.MAYBE,
+          conditions: createCatalogConditions({
+            anyOf: [
+              {
+                allOf: [isEntityOwner(getIdentityClaims(identity))],
+              },
+              {
+                allOf: [isEntityKind(['template'])],
+              },
+            ],
+          }),
+        };
+      }
+
       return {
         result: AuthorizeResult.MAYBE,
         conditions: createCatalogConditions({
           anyOf: [
             {
               allOf: [isEntityOwner(getIdentityClaims(identity))],
-            },
-            {
-              allOf: [isEntityKind(['template'])],
             },
             // TODO(authorization-framework) we probably need the ability
             // to do negative matching (i.e. exclude all entities of type X)
