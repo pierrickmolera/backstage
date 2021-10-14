@@ -114,7 +114,7 @@ export const createPermissionIntegration = <
           ),
         );
 
-        return res.status(200).json({ allowed });
+        return res.status(200).json(allowed);
       });
 
       return router;
