@@ -29,4 +29,4 @@ export * from './processing';
 export * from './providers';
 export * from './service';
 
-export { conditions, createConditions } from './permissions';
+export { conditions, createConditions, extendRulesWith } from './permissions';

@@ -17,3 +17,4 @@
 export * from './service';
 export * from './handler';
 export { createPermissionIntegration } from './integration';
+export type { Conditions } from './integration';

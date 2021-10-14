@@ -35,7 +35,11 @@ type Condition<TRule> = TRule extends PermissionRule<any, any, infer TParams>
   ? (...params: TParams) => PermissionCondition<TParams>
   : never;
 
-type Conditions<TRules extends Record<string, PermissionRule<any, any>>> = {
+// TODO: THIS IS NOT GREAT
+// Ideally do not want to export this type
+export type Conditions<
+  TRules extends Record<string, PermissionRule<any, any>>,
+> = {
   [Name in keyof TRules]: Condition<TRules[Name]>;
 };
 
@@ -74,11 +78,18 @@ export const createPermissionIntegration = <
     resourceType: string;
     conditions: Filters<PermissionCondition>;
   };
+  extendRulesWith: <
+    TExtensionRules extends { [key: string]: PermissionRule<TResource, any> },
+  >(
+    rules: TExtensionRules,
+  ) => Conditions<TExtensionRules>;
 } => {
+  const rulesMap = new Map(Object.values(rules).map(rule => [rule.name, rule]));
+
   const getRule = (
     name: string,
   ): PermissionRule<TResource, QueryType<TRules>> => {
-    const rule = Object.values(rules).find(r => r.name === name);
+    const rule = rulesMap.get(name);
 
     if (!rule) {
       throw new Error(`Unexpected permission rule: ${name}`);
@@ -150,5 +161,21 @@ export const createPermissionIntegration = <
       resourceType,
       conditions,
     }),
+    extendRulesWith: extensionRules => {
+      Object.values(extensionRules).forEach(rule =>
+        rulesMap.set(rule.name, rule),
+      );
+      // TODO: This was copy pasted from conditions, refactor to be able to reuse logic
+      return Object.entries(extensionRules).reduce(
+        (acc, [key, rule]) => ({
+          ...acc,
+          [key]: (...params) => ({
+            rule: rule.name,
+            params,
+          }),
+        }),
+        {} as Conditions<typeof extensionRules>,
+      );
+    },
   };
 };
