@@ -52,6 +52,8 @@ export const {
   registerPermissionRule,
 } = createPermissionIntegration({
   pluginId: 'catalog',
+  // TODO(authorization-framework): what if a single plugin has
+  // multiple resource types?
   resourceType: 'catalog-entity',
   rules: { hasAnnotation, isEntityKind, isEntityOwner },
   getResource: getEntity,

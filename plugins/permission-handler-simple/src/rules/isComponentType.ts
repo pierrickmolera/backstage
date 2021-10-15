@@ -18,6 +18,10 @@ import { ComponentEntityV1alpha1, Entity } from '@backstage/catalog-model';
 import { PermissionCriteria } from '@backstage/permission-common';
 import { EntitiesSearchFilter } from '@backstage/plugin-catalog-backend';
 
+// TODO(authorization-framework): is this the right model for composing multiple
+// requirements in a single rule? We could also explore other things, like
+// introducing an array of rule dependencies which are inserted before the rule
+// if specified.
 export const isComponentType = {
   name: 'IS_COMPONENT_TYPE',
   description: 'Allow entities with type component',
