@@ -44,9 +44,6 @@ const getEntity = async (
   return entities[0];
 };
 
-// TODO(authorization-framework): explore the possibility
-// of allowing consumers of the catalog-backend to supply
-// additional filters.
 export const {
   createPermissionIntegrationRouter,
   conditions,
