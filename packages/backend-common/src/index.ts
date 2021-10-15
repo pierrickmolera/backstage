@@ -31,5 +31,4 @@ export * from './paths';
 export * from './reading';
 export * from './scm';
 export * from './service';
-export type { Filters } from './types';
 export * from './util';

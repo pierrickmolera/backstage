@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { Filters } from '@backstage/backend-common';
 import { Entity, EntityRelationSpec } from '@backstage/catalog-model';
 
 /**
@@ -23,7 +22,9 @@ import { Entity, EntityRelationSpec } from '@backstage/catalog-model';
  * Any (at least one) of the outer sets must match, within which all of the
  * individual filters must match.
  */
-export type EntityFilter = Filters<EntitiesSearchFilter>;
+export type EntityFilter = {
+  anyOf: { allOf: EntitiesSearchFilter[] }[];
+};
 
 /**
  * A pagination rule for entities.

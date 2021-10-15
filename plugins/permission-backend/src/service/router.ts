@@ -18,7 +18,6 @@ import {
   errorHandler,
   SingleHostDiscovery,
   PluginEndpointDiscovery,
-  Filters,
 } from '@backstage/backend-common';
 import fetch from 'cross-fetch';
 import express, { Request, Response } from 'express';
@@ -38,6 +37,7 @@ import {
   AuthorizeRequestJSON,
   Identified,
   PermissionCondition,
+  PermissionCriteria,
 } from '@backstage/permission-common';
 import { PermissionHandler } from '../handler';
 import {
@@ -57,7 +57,7 @@ const applyConditions = async (
   conditions: {
     pluginId: string;
     resourceType: string;
-    conditions: Filters<PermissionCondition>;
+    conditions: PermissionCriteria<PermissionCondition>;
   },
   discoveryApi: PluginEndpointDiscovery,
   authHeader?: string,

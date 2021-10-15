@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { Filters } from '@backstage/backend-common';
 import {
   PermissionCondition,
+  PermissionCriteria,
   PermissionRule,
 } from '@backstage/permission-common';
 import express, { Response, Router } from 'express';
@@ -25,7 +25,7 @@ import { conditionFor } from './conditionFor';
 export type ApplyConditionsRequest = {
   resourceRef: string;
   resourceType: string;
-  conditions: Filters<PermissionCondition<unknown[]>>;
+  conditions: PermissionCriteria<PermissionCondition<unknown[]>>;
 };
 
 export type ApplyConditionsResponse = {
@@ -67,13 +67,13 @@ export const createPermissionIntegration = <
 }): {
   createPermissionIntegrationRouter: (...params: TGetResourceParams) => Router;
   toQuery: (
-    conditions: Filters<PermissionCondition>,
-  ) => Filters<QueryType<TRules>>;
+    conditions: PermissionCriteria<PermissionCondition>,
+  ) => PermissionCriteria<QueryType<TRules>>;
   conditions: Conditions<TRules>;
-  createConditions: (conditions: Filters<PermissionCondition>) => {
+  createConditions: (conditions: PermissionCriteria<PermissionCondition>) => {
     pluginId: string;
     resourceType: string;
-    conditions: Filters<PermissionCondition>;
+    conditions: PermissionCriteria<PermissionCondition>;
   };
   registerPermissionRule: (
     rule: PermissionRule<TResource, QueryType<TRules>>,
@@ -133,8 +133,8 @@ export const createPermissionIntegration = <
       return router;
     },
     toQuery: (
-      conditions: Filters<PermissionCondition>,
-    ): Filters<QueryType<TRules>> => ({
+      conditions: PermissionCriteria<PermissionCondition>,
+    ): PermissionCriteria<QueryType<TRules>> => ({
       anyOf: conditions.anyOf.map(({ allOf }) => ({
         allOf: allOf.map(({ rule, params }) =>
           getRule(rule).toQuery(...params),
@@ -148,7 +148,9 @@ export const createPermissionIntegration = <
       }),
       {} as Conditions<TRules>,
     ),
-    createConditions: (conditions: Filters<PermissionCondition>) => ({
+    createConditions: (
+      conditions: PermissionCriteria<PermissionCondition>,
+    ) => ({
       pluginId,
       resourceType,
       conditions,

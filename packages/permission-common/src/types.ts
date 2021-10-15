@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-import { Filters } from '@backstage/backend-common';
 import { Permission, PermissionCondition, PermissionJSON } from './permissions';
 
 export type Identified<T> = T & { id: string };
+
+export type PermissionCriteria<TQuery> = {
+  anyOf: { allOf: TQuery[] }[];
+};
 
 export enum AuthorizeResult {
   DENY = 'DENY',
@@ -48,7 +51,7 @@ export type DefinitiveAuthorizeResult = {
 export type ConditionalAuthorizeResult = {
   result: AuthorizeResult.MAYBE;
   // TODO(authorization-framework): should we use a concrete type instead of any?
-  conditions: Filters<PermissionCondition<any>>;
+  conditions: PermissionCriteria<PermissionCondition<any>>;
 };
 
 export type AuthorizeResponse =

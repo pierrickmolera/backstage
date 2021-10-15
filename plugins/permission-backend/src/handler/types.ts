@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { Filters } from '@backstage/backend-common';
 import {
   AuthorizeResult,
   DefinitiveAuthorizeResult,
   OpaqueAuthorizeRequest,
   PermissionCondition,
+  PermissionCriteria,
 } from '@backstage/permission-common';
 import { BackstageIdentity } from '@backstage/plugin-auth-backend';
 
@@ -28,7 +28,7 @@ export type ConditionalHandlerResult = {
   conditions: {
     pluginId: string;
     resourceType: string;
-    conditions: Filters<PermissionCondition>;
+    conditions: PermissionCriteria<PermissionCondition>;
   };
 };
 
