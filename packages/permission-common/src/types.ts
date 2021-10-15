@@ -19,7 +19,7 @@ import { Permission, PermissionCondition, PermissionJSON } from './permissions';
 export type Identified<T> = T & { id: string };
 
 export type PermissionCriteria<TQuery> = {
-  anyOf: { allOf: TQuery[] }[];
+  anyOf: { allOf: (TQuery | PermissionCriteria<TQuery>)[] }[];
 };
 
 export enum AuthorizeResult {

@@ -47,6 +47,14 @@ type QueryType<TRules> = TRules extends Record<
   ? TQuery
   : never;
 
+// TODO(authorization-framework): we probably need some more reliable
+// way to tell that something is a PermissionCriteria instance.
+function isPermissionCriteria(
+  criteria: unknown,
+): criteria is PermissionCriteria<unknown> {
+  return Object.prototype.hasOwnProperty.call(criteria, 'anyOf');
+}
+
 export const createPermissionIntegration = <
   TResource,
   TRules extends { [key: string]: PermissionRule<TResource, any> },
@@ -120,11 +128,19 @@ export const createPermissionIntegration = <
             return res.status(400).end();
           }
 
-          const allowed = body.conditions.anyOf.some(({ allOf }) =>
-            allOf.every(({ rule, params }) =>
-              getRule(rule).apply(resource, ...params),
-            ),
-          );
+          const resolveCriteria = (
+            criteria: PermissionCriteria<PermissionCondition>,
+          ): boolean => {
+            return criteria.anyOf.some(({ allOf }) =>
+              allOf.every(child =>
+                isPermissionCriteria(child)
+                  ? resolveCriteria(child)
+                  : getRule(child.rule).apply(resource, ...child.params),
+              ),
+            );
+          };
+
+          const allowed = resolveCriteria(body.conditions);
 
           return res.status(200).json({ allowed });
         },
@@ -134,13 +150,28 @@ export const createPermissionIntegration = <
     },
     toQuery: (
       conditions: PermissionCriteria<PermissionCondition>,
-    ): PermissionCriteria<QueryType<TRules>> => ({
-      anyOf: conditions.anyOf.map(({ allOf }) => ({
-        allOf: allOf.map(({ rule, params }) =>
-          getRule(rule).toQuery(...params),
-        ),
-      })),
-    }),
+    ): PermissionCriteria<QueryType<TRules>> => {
+      const mapCriteria = (
+        criteria: PermissionCriteria<PermissionCondition>,
+        mapFn: (
+          condition: PermissionCondition,
+        ) => QueryType<TRules> | PermissionCriteria<QueryType<TRules>>,
+      ): PermissionCriteria<QueryType<TRules>> => {
+        return {
+          anyOf: criteria.anyOf.map(({ allOf }) => ({
+            allOf: allOf.map(child =>
+              isPermissionCriteria(child)
+                ? mapCriteria(child, mapFn)
+                : mapFn(child),
+            ),
+          })),
+        };
+      };
+
+      return mapCriteria(conditions, condition =>
+        getRule(condition.rule).toQuery(...condition.params),
+      );
+    },
     conditions: Object.entries(rules).reduce(
       (acc, [key, rule]) => ({
         ...acc,
