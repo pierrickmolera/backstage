@@ -21,65 +21,25 @@ import {
 import {
   AuthorizeResult,
   OpaqueAuthorizeRequest,
-  PermissionCondition,
-  PermissionRule,
   TechDocsPermission,
 } from '@backstage/permission-common';
 import {
-  Conditions,
+  conditionFor,
   HandlerResult,
   PermissionHandler,
 } from '@backstage/plugin-permission-backend';
 import {
   conditions as catalogConditions,
   createConditions as createCatalogConditions,
-  EntitiesSearchFilter,
 } from '@backstage/plugin-catalog-backend';
-import {
-  ComponentEntityV1alpha1,
-  Entity,
-  RESOURCE_TYPE_CATALOG_ENTITY,
-} from '@backstage/catalog-model';
+import { RESOURCE_TYPE_CATALOG_ENTITY } from '@backstage/catalog-model';
+import { isComponentType as isComponentTypeRule } from './rules';
 
 const { isEntityOwner, isEntityKind } = catalogConditions;
 
-const isComponentType = {
-  name: 'IS_COMPONENT_TYPE',
-  description: 'Allow entities with type component',
-  apply(resource: Entity, componentTypes: string[]) {
-    if (resource.kind.toLocaleLowerCase('en-US') === 'component') {
-      return componentTypes.includes(
-        (resource as ComponentEntityV1alpha1).spec.type.toLocaleLowerCase(
-          'en-US',
-        ),
-      );
-    }
-    return false;
-  },
-  // TODO: this condition has two separate requirements that need to be true
-  // Might need to change toQuery to return a complete Filters object
-  toQuery(componentTypes: string[]): EntitiesSearchFilter {
-    return {
-      key: 'spec.type',
-      matchValueIn: componentTypes.map(type => type.toLocaleLowerCase('en-US')),
-    };
-  },
-};
+const isComponentType = conditionFor(isComponentTypeRule);
 
 export class SimplePermissionHandler implements PermissionHandler {
-  private readonly isComponentType: (
-    componentTypes: string[],
-  ) => PermissionCondition<[componentTypes: string[]]>;
-  constructor(
-    extendRulesWith: <
-      TExtensionRules extends { [key: string]: PermissionRule<Entity, any> },
-    >(
-      rules: TExtensionRules,
-    ) => Conditions<TExtensionRules>,
-  ) {
-    this.isComponentType = extendRulesWith({ isComponentType }).isComponentType;
-  }
-
   async handle(
     request: OpaqueAuthorizeRequest,
     identity?: BackstageIdentity,
@@ -103,10 +63,10 @@ export class SimplePermissionHandler implements PermissionHandler {
           conditions: createCatalogConditions({
             anyOf: [
               {
-                allOf: [
-                  // isEntityOwner(getIdentityClaims(identity)),
-                  this.isComponentType(['service']),
-                ],
+                allOf: [isEntityOwner(getIdentityClaims(identity))],
+              },
+              {
+                allOf: [isComponentType(['website'])],
               },
               {
                 allOf: [isEntityKind(['template'])],
