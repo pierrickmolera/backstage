@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { PermissionCriteria } from '../types';
+
 export type PermissionCondition<TParams extends any[] = any> = {
   rule: string;
   params: TParams;
@@ -23,5 +25,5 @@ export type PermissionRule<TResource, TQuery, TParams extends any[] = any> = {
   name: string;
   description: string;
   apply(resource: TResource, ...params: TParams): boolean;
-  toQuery(...params: TParams): TQuery;
+  toQuery(...params: TParams): TQuery | PermissionCriteria<TQuery>;
 };
