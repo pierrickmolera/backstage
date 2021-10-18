@@ -14,4 +14,14 @@
  * limitations under the License.
  */
 
-export * from './hooks';
+import { useEntity } from '@backstage/plugin-catalog-react';
+import { stringifyEntityRef } from '@backstage/catalog-model';
+import { Permission } from '@backstage/permission-common';
+import { usePermission } from '@backstage/plugin-permission';
+
+export const useEntityPermission = (permission: Permission) => {
+  // TODO(mtlewis/orkohunter): what happens if there's no entity?
+  const { entity } = useEntity();
+
+  return usePermission(permission, stringifyEntityRef(entity));
+};
