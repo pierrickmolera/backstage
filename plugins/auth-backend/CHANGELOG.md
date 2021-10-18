@@ -1,5 +1,11 @@
 # @backstage/plugin-auth-backend
 
+## 0.4.5
+
+### Patch Changes
+
+- de3e26aecc: Fix a bug preventing an access token to be refreshed a second time with the GitHub provider.
+
 ## 0.4.4
 
 ### Patch Changes

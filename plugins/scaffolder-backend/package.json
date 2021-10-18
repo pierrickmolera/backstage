@@ -70,7 +70,7 @@
     "yaml": "^1.10.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.7.16",
+    "@backstage/cli": "^0.8.0",
     "@backstage/test-utils": "^0.1.19",
     "@types/command-exists": "^1.2.0",
     "@types/fs-extra": "^9.0.1",
